@@ -1,0 +1,16 @@
+[
+{
+  "modid": "Streams",
+  "name": "Streams",
+  "description": "Creates flowing rivers and streams with moving currents.",
+  "version": "0.1.4",
+  "mcversion": "1.7.10",
+  "url": "http://www.curse.com/mc-mods/minecraft/229769-streams",
+  "updateUrl": "",
+  "authors": ["delvr"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
