@@ -1,0 +1,7 @@
+/*.iml
+/.gradle/
+/build*/
+/doc*/
+/lib*/
+/run*/
+/gradle/wrapper/gradle-wrapper.jar
