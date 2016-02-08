@@ -22,7 +22,6 @@ class RiverMouthComponent(river: RiverStructure, boundingBox: StructureBoundingB
 
     for(z <- ZLine) {
         maxSurfaceLevels(z) = river.seaLevel
-        roofLevels(z) = boundingBox.yMax
         surfaceLevelsUnits(z) = river.seaLevelUnits
     }
 
@@ -39,7 +38,7 @@ class RiverMouthComponent(river: RiverStructure, boundingBox: StructureBoundingB
     def addUpstream(implicit bac: IBlockAccess, random: Random) {
         val modelPlan = randomElement(ModelPlans)
         newUpstreamComponent(straightOffset(modelPlan).get, upstreamOrientation, Nil, halfChance).foreach { upstream =>
-            if(upstream.setMaxSurfaceAndRoofLevels(river.seaLevel)) {
+            if(upstream.setMaxSurfaceLevels(river.seaLevel)) {
                 upstream.addUpstream(river.seaLevelUnits, Seq(this)).foreach { branch =>
                     straightUpstream = Some(branch)
                     overlay(stretchNorthSouth(modelPlan), flowPlan)
@@ -49,10 +48,6 @@ class RiverMouthComponent(river: RiverStructure, boundingBox: StructureBoundingB
                 }
             }
         }
-    }
-
-    def adjustUpstream() {
-        upstreamComponents.foreach(_.adjustUpstream())
     }
 
     def debugPos(implicit bac: IBlockAccess) {
