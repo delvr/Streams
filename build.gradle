@@ -11,3 +11,15 @@ apply plugin: "scala"
 apply plugin: "forge"
 
 apply from: zipTree(fileTree("libs"){include "*Farseek-deobf*.jar"}.singleFile).matching{include "common.gradle"}.singleFile
+
+task srcJar(type: Jar) {
+    appendix = "src"
+    from sourceSets.main.allSource
+}
+
+task deobfJar(type: Jar) {
+    appendix = "deobf"
+    from sourceSets.main.output
+}
+
+tasks.jar.dependsOn("srcJar", "deobfJar")

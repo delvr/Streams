@@ -32,7 +32,7 @@ class RiverUpstreamComponent(downstream: RiverComponent, boundingBox: StructureB
         val straightModel = randomElement(StraightModelPlans)
         val curvedModel = randomElement(CurvedModelPlans)
         val sortedCandidates = upstreamCandidates(straightModel, curvedModel, uncommitted).filter(
-            _.setMaxSurfaceAndRoofLevels(yMinSurfaceLevel)).sortBy(_.roofLevels(ZPlanMax))
+            _.setMaxSurfaceLevels(yMinSurfaceLevel)).sortBy(_.roofLevels(ZPlanMax))
         sortedCandidates.lastOption.foreach { highest =>
             val newUncommitted = this +: uncommitted
             val highBranch = highest.addUpstream(upstreamMinSurfaceLevelUnits(highest, minSurfaceLevelUnits), newUncommitted)
@@ -89,42 +89,18 @@ class RiverUpstreamComponent(downstream: RiverComponent, boundingBox: StructureB
         ).flatten
     }
 
-    def setMaxSurfaceAndRoofLevels(yMinSurfaceLevel: Int)(implicit bac: IBlockAccess): Boolean = { // Note: flow plan has not been overlaid yet
+    def setMaxSurfaceLevels(yMinSurfaceLevel: Int)(implicit bac: IBlockAccess): Boolean = { // Note: flow plan has not been overlaid yet
         for(z <- ZLine) {
             maxSurfaceLevels(z) = Int.MaxValue
-            roofLevels(z) = Int.MinValue
             for(x <- XLine) {
                 if(!blockAt(x, yMinSurfaceLevel, z).isSolid)
                     return false
                 val yMaxSurfaceLevel = yUpFrom(yMinSurfaceLevel + 1).find(!blockAt(x, _, z).isSolid).getOrElse(cs.yLocal(bac.yMax)) - 1
                 if(yMaxSurfaceLevel < maxSurfaceLevels(z))
                     maxSurfaceLevels(z) = yMaxSurfaceLevel
-                if(yMaxSurfaceLevel + 1 > roofLevels(z)) // Makes everything an open valley unless otherwise set
-                    roofLevels(z) = min(cs.yLocal(bac.yMax), yMaxSurfaceLevel + 1)
             }
         }
         true
-    }
-
-    def adjustUpstream() {
-        for(z <- ZLine) {
-            if(isSource) {
-                surfaceLevelsUnits(z) = max(downstreamLevel(z, _.surfaceLevelsUnits).get, surfaceLevelUnits(maxSurfaceLevels(z) - MinSourceBackWallHeight))
-                roofLevels(z) = surfaceLevel(surfaceLevelsUnits(z)) + max(1, 6 - z)
-            } else {
-                surfaceLevelsUnits(z) = downstreamLevel(z, _.surfaceLevelsUnits).get
-                if(!isFlatAt(z)) {
-                    val heightDiff = surfaceLevelUnits(maxSurfaceLevels(z)) - surfaceLevelsUnits(z)
-                    val increase = max(1, widthStretch match {
-                        case 0 => heightDiff / 2
-                        case 1 => heightDiff / 4
-                        case n => 8 - n
-                    })
-                    surfaceLevelsUnits(z) = min(surfaceLevelUnits(maxSurfaceLevels(z)), surfaceLevelsUnits(z) + increase)
-                }
-            }
-        }
-        upstreamComponents.foreach(_.adjustUpstream())
     }
 }
 

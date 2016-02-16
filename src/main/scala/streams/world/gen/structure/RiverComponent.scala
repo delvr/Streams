@@ -43,7 +43,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     val flows  = mutable.Set[XZ]()
     val shores = mutable.Set[XZ]()
 
-    private val valleys = mutable.Set[XZ]() // Currently everything is a valley, until tunnels are re-implemented
+    private val valleys = mutable.Set[XZ]()
 
     var widthStretch = -1
 
@@ -99,8 +99,6 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         Seq(straightUpstreamLevel(z, levelType, offset), curvedUpstreamLevel(x, levelType, offset)).flatten
 
     private def flowDecayAt(z: Int) = flowDecay(clamped(surfaceLevelsUnits, z))
-
-    private def ceilingLevelAt(z: Int)(implicit bac: IBlockAccess) = min(clamped(roofLevels, z), cs.yLocal(bac.yMax))
 
     def hasCurve = curvedUpstream.isDefined
     def isJunction = straightUpstream.isDefined && curvedUpstream.isDefined
@@ -204,7 +202,8 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     }
 
     protected def isFlatAt(z: Int) = { // Rivers must be flat wherever they curve or flows don't all have a downstream match
-        if(z == 0) true // By design of the flow plans; can itself be a waterfall but seen as flat from upstream
+        if(isSource) false
+        else if(z == 0) true // By design of the flow plans; can itself be a waterfall but seen as flat from upstream
         else curvedOffset(flowPlan) match {
             case Some(offset) if z >= offset => true
             case _ => XLine.exists(x => flowPlan(x)(z).isDefined != flowPlan(x)(z - 1).isDefined ||
@@ -220,16 +219,43 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         (upstreamSurfaceLevels ++ flatSurfaceLevels :+ maxSurfaceLevels(z)).min
     }
 
+    def adjustUpstream()(implicit bac: IBlockAccess) {
+        for(z <- ZLine) {
+            val yMaxTunnelRoof = min(maxSurfaceLevels(z) + MinTunnelHeight + 1, cs.yLocal(bac.yMax))
+            surfaceLevelsUnits(z) = downstreamLevel(z, _.surfaceLevelsUnits).getOrElse(surfaceLevelUnits(river.seaLevel))
+            roofLevels(z) = downstreamLevel(z, _.roofLevels).getOrElse(yMaxTunnelRoof)
+            val tunnel = blockAt(-ShorePadding, roofLevels(z), z).isSolid || blockAt(XPlanMax + ShorePadding, roofLevels(z), z).isSolid
+            if(!tunnel && !isSource)
+                XLine.foreach(x => valleys += ((x, z)))
+            if(!isFlatAt(z)) {
+                if(roofLevels(z) < yMaxTunnelRoof)
+                    roofLevels(z) += 1
+                val ySurface = surfaceLevel(surfaceLevelsUnits(z))
+                val yMaxSurface = max(ySurface, roofLevels(z) - MinTunnelHeight - 1 - (if(isSource) MinSourceBackWallHeight else 0))
+                if(ySurface == yMaxSurface) {
+                    if(surfaceLevelsUnits(z) < surfaceLevelUnits(ySurface))
+                      surfaceLevelsUnits(z) += 1
+                } else
+                  surfaceLevelsUnits(z) = surfaceLevelUnits(if(widthStretch >= 2) ySurface + 1 else yMaxSurface) - 6
+            }
+        }
+        upstreamComponents.foreach(_.adjustUpstream())
+    }
+
     //-----------------------------------------------------------------------------------------------------------------
     // Building
     //-----------------------------------------------------------------------------------------------------------------
     def carveValleyAt(wx: Int, yGround: Int, wz: Int)(implicit blockSetter: BlockSetter, random: Random) {
         val (x, z) = cs.xzLocal(wx, wz)
-        if(ceilingLevelAt(z) + MinTunnelRoofThickness - 1 >= yGround) {
-            val flow = flowDefined(x, z)
-            val dfs = distanceFromShore(x, z)
+        if(valleys.nonEmpty) {
+            val valley = valleys.contains(x, z)
+            val flow = valley && flowDefined(x, z)
+            val dfs = if(valley) distanceFromShore(x, z, flow) else {
+              val valleyFlows = valleys.filter(xz => flowDefined(xz.x, xz.z))
+              if(valleyFlows.isEmpty) distanceFromShore(x, z, flowDefined(x, z))
+                else round(valleyFlows.map(v => distance(x, z, v.x, v.z)).min).toInt
+            }
             if((flow || dfs <= ShorePadding) && !isSource) {
-                valleys += ((x, z))
                 val ySurface = surfaceLevelAt(x, z, dfs) // Surface level adjusted for distance from shore
                 val xyzSurface = (x, ySurface, z)
                 carveValley(x, ySurface, z, dfs, flow, yGround)
@@ -244,9 +270,8 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     }
 
     private def carveValley(x: Int, ySurface: Int, z: Int, dfs: Int, flow: Boolean, yGround: Int)(implicit blockSetter: BlockSetter) {
-        val yTop = ceilingLevelAt(z) + MinTunnelRoofThickness - 1
         val yFloor = if(flow) ySurface else adjustedFloorLevel(x, valleyFloor(x, ySurface, z, dfs, flow, yGround), z)
-        for(y <- yTop until yFloor by -1)
+        for(y <- yGround until yFloor by -1)
             clearBlockAt(x, y, z)
     }
 
@@ -269,7 +294,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
             val wxz = cs.xzWorld(x, z)
             if(blockSetter.validAt(wxz)) {
                 val flow = flowDefined(x, z)
-                val dfs = distanceFromShore(x, z)
+                val dfs = distanceFromShore(x, z, flow)
                 if(flow || dfs <= ShorePadding) {
                     val ySurface = surfaceLevelAt(x, z, dfs)
                     if(isSource && !flow && dfs == 0) {
@@ -277,7 +302,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                         foreachDownFrom((x, clamped(roofLevels, z) - 1, z), blockAt(_).getMaterial != Material.rock, xyz =>
                             if(blockAt(xyz).isGround) setBlockAndDataAt(xyz, rockBlock))
                     } else if(!valleys.contains(x, z))
-                        carveTunnel(x, ySurface, z, dfs, flow) // None currently
+                        carveTunnel(x, ySurface, z, dfs, flow)
                     else if(tfcLoaded && dfs == 0) { // Fix TFC-mangled valleys
                         val shoreBlock = blockAt(x, ySurface, z)
                         val belowShoreBlockAndData = blockAndDataBelow(x, ySurface, z)
@@ -295,11 +320,16 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     private def carveTunnel(x: Int, ySurface: Int, z: Int, dfs: Int, flow: Boolean)(implicit blockSetter: BlockSetter) {
         if(flow || dfs < MidPadding) {
             val yFloor = if(flow) ySurface else adjustedFloorLevel(x, ySurface + dfs, z)
-            val yCeiling = ceilingLevelAt(z) - (yFloor - ySurface)
+            val yRoof = if(!isSource) clamped(roofLevels, z) else ySurface + max(0, MinTunnelHeight - z * 3 / 4 - 1)
+            val yBaseCeiling = yRoof - (yFloor - ySurface) - (if(flow) max(0, BaseTunnelCeilingThickness - dfs) else BaseTunnelCeilingThickness)
+            val stalactite = FloorAndCeilingFudge.nextBoolean && blockAt(x, yBaseCeiling, z).isSolid
+            val yCeiling = if(stalactite) yBaseCeiling - 1 else yBaseCeiling
             if(yCeiling > yFloor + 1 || (isSource && yCeiling > yFloor)) {
                 val ceiling = blockAt(x, yCeiling, z)
-                if(ceiling.isGranular)
-                    setRockBlockAt(x, yCeiling, z) // Harden ceiling
+                if(ceiling.isGranular) {
+                  setRockBlockAt(x, yCeiling, z) // Harden ceiling
+                  if(stalactite) setRockBlockAt(x, yCeiling + 1, z)
+                }
                 for(y <- yCeiling - 1 until yFloor by -1)
                     clearBlockAt(x, y, z)
             }
@@ -374,10 +404,14 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         if(shores.contains(wxz)) None
         else river.intersectingComponentsAt(wxz, _.boundingBox).find(c => c != this && c.isFlowOrShoreAt(wxz))
 
-    private def distanceFromShore(x: Int, z: Int): Int = {
+    private def distanceFromShore(x: Int, z: Int, flow: Boolean): Int = {
         val wx = cs.xWorld(x, z)
         val wz = cs.zWorld(x, z)
-        if(shores.contains(wx, wz)) 0 else round(shores.map(s => distance(wx, wz, s.x, s.z)).min).toInt
+        val base = if(shores.contains(wx, wz)) 0 else {
+          val preRoundBase = shores.map(s => distance(wx, wz, s.x, s.z)).min
+          (if(FloorAndCeilingFudge.nextBoolean()) floor(preRoundBase) else ceil(preRoundBase)).toInt
+        }
+        if(flow || z >= ZPlanMax/2) base else base + 1
     }
 
     private def surfaceLevelAt(x: Int, z: Int, dfs: Int) = {
@@ -416,8 +450,10 @@ object RiverComponent {
     val EachLocalPosWithPadding: Seq[XZ] =
         for(x <- -ShorePadding to XPlanMax + ShorePadding;
             z <- -ShorePadding to ZPlanMax + ShorePadding) yield (x, z)
-    
-    val MinTunnelRoofThickness = 2 // 1 stone, 1 dirt
+
+    val MinTunnelHeight = 8
+    val BaseTunnelCeilingThickness = 2
+    val FloorAndCeilingFudge = new Random
     
     val SurfacePlaceholder = cobblestone // Opaque and non-fertile
 
