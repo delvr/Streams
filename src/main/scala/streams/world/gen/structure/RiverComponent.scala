@@ -1,7 +1,5 @@
 package streams.world.gen.structure
 
-import java.util.Random
-
 import farseek.block._
 import farseek.block.material._
 import farseek.util._
@@ -10,6 +8,7 @@ import farseek.world._
 import farseek.world.biome._
 import farseek.world.gen._
 import farseek.world.gen.structure.StructureComponent
+import java.util.Random
 import net.minecraft.block._
 import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks._
@@ -17,14 +16,12 @@ import net.minecraft.world._
 import net.minecraft.world.gen.structure.StructureBoundingBox
 import net.minecraftforge.common.BiomeDictionary.Type._
 import net.minecraftforge.common.BiomeDictionary._
-import streams.block.FixedFlowBlock._
-import streams.block._
-import streams.world.gen.TfcChunkGeneratorExtensions
-import streams.world.gen.structure.RiverComponent._
-
 import scala.Array._
 import scala.collection.mutable
 import scala.math._
+import streams.block.FixedFlowBlock._
+import streams.block._
+import streams.world.gen.structure.RiverComponent._
 
 /** @author delvr */
 abstract class RiverComponent(val river: RiverStructure, val boundingBox: StructureBoundingBox,
@@ -260,10 +257,8 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 val xyzSurface = (x, ySurface, z)
                 carveValley(x, ySurface, z, dfs, flow, yGround)
                 if(flow && blockAt(xyzSurface).getMaterial != liquid) {
-                    if(tfcLoaded) // Placeholders would get removed during block replacement; defer their placement
-                        TfcChunkGeneratorExtensions.xyzValleySurfaces += cs.xyzWorld(xyzSurface)
-                    else // Don't add water yet or it would block caves from digging nearby
-                        setBlockAt(xyzSurface, SurfacePlaceholder) // but do prevent chunk block replacement below here
+                    // Don't add water yet or it would block caves from digging nearby
+                    setBlockAt(xyzSurface, SurfacePlaceholder) // but do prevent chunk block replacement below here
                 }
             }
         }
@@ -303,13 +298,6 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                             if(blockAt(xyz).isGround) setBlockAndDataAt(xyz, rockBlock))
                     } else if(!valleys.contains(x, z))
                         carveTunnel(x, ySurface, z, dfs, flow)
-                    else if(tfcLoaded && dfs == 0) { // Fix TFC-mangled valleys
-                        val shoreBlock = blockAt(x, ySurface, z)
-                        val belowShoreBlockAndData = blockAndDataBelow(x, ySurface, z)
-                        val belowShoreBlock = belowShoreBlockAndData.block
-                        if(!shoreBlock.isSolidOrLiquid || (shoreBlock.getMaterial == Material.rock && belowShoreBlock.isSolid && belowShoreBlock.getMaterial != Material.rock))
-                            setBlockAndDataAt((x, ySurface, z), if(belowShoreBlock.isSoil) grassBlockFor(x, ySurface, z) else belowShoreBlockAndData, notifyNeighbors = false)
-                    }
                     if(flow)
                         fillRiver(x, ySurface, z, dfs)
                 }
@@ -341,7 +329,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         val yBottom = yDownstreamSurface - clamped(1, dfs, MaxDepth)
         if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
             val bottomBlock =
-                if(tfcLoaded || isBiomeOfType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
+                if(isBiomeOfType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
                 else sandBlockFor(x, yBottom, z)
             foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
         }

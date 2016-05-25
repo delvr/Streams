@@ -10,6 +10,7 @@ import net.minecraft.block.Block
 import net.minecraft.block.material._
 import net.minecraft.world.WorldType._
 import net.minecraft.world._
+import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.structure._
 
 /** @author delvr */
@@ -24,7 +25,7 @@ class RiverGenerator(val liquid: MaterialLiquid, dimensionId: Int) extends Struc
 
     def riverKey(xChunk: Int, zChunk: Int) = (iRiverChunk(xChunk), iRiverChunk(zChunk))
 
-    override protected def generate(xChunk: Int, zChunk: Int, blocks: Array[Block], datas: Array[Byte])(implicit worldAccess: IBlockAccess) {
+    override protected def generate(xChunk: Int, zChunk: Int, primer: ChunkPrimer)(implicit worldAccess: IBlockAccess) {
         val xRiverChunk = iRiverChunk(xChunk)
         val zRiverChunk = iRiverChunk(zChunk)
         val riverKey = (xRiverChunk, zRiverChunk)
@@ -46,8 +47,7 @@ class RiverGenerator(val liquid: MaterialLiquid, dimensionId: Int) extends Struc
         }
         structures.get(riverKey).foreach(_.foreach{ river =>
             val worldProvider = worldAccess.worldProvider
-            val yBottom = if(tfcLoaded && worldAccess.isSurfaceWorld) 128 else 0
-            val blockArray = new ChunkBlockArrayAccess(worldProvider, xChunk, zChunk, blocks, Option(datas), yBottom)
+            val blockArray = new ChunkBlockArrayAccess(worldProvider, xChunk, zChunk, primer)
             river.carveValleys(blockArray, chunkRandom(xChunk, zChunk)(worldProvider)) // 1st pass, before chunk terrain replacement
         })
     }

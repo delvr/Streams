@@ -4,6 +4,14 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <option name="AUTODETECT_INDENTS" value="false" />
+        <ScalaCodeStyleSettings>
+          <option name="classCountToUseImportOnDemand" value="2" />
+          <option name="importLayout">
+            <array>
+              <option value="all other imports" />
+            </array>
+          </option>
+        </ScalaCodeStyleSettings>
         <XML>
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>

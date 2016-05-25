@@ -11,6 +11,7 @@
       <option name="taskNames">
         <list>
           <option value="setupDecompWorkspace" />
+          <option value="genIntellijRuns" />
         </list>
       </option>
       <option name="vmOptions" value="" />

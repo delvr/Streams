@@ -14,7 +14,7 @@ trait FixedFlowBlock extends Block {
 
 object FixedFlowBlock {
 
-    private val FixedFlowBlocks: Map[(Material, Int, Int), FixedFlowBlock] =
+    val FixedFlowBlocks: Map[(Material, Int, Int), FixedFlowBlock] =
         (for(material <- Seq(Material.water, Material.lava, Material.ice); dx <- -2 to 2; dz <- -2 to 2; if abs(dx) == 2 || abs(dz) == 2 || (dx == 0 && dz == 0))
         yield (material, dx, dz) -> (if(material == Material.ice) new BlockRiverIce(dx, dz) else new BlockRiver(material.asInstanceOf[MaterialLiquid], dx, dz))).toMap
 

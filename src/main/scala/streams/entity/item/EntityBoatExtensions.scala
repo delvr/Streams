@@ -33,11 +33,11 @@ object EntityBoatExtensions {
                 val yMax = floor_double(boat.maxY + 1d)
                 val zMin = floor_double(boat.minZ) //- 1
                 val zMax = floor_double(boat.maxZ + 1d) //+ 1
-                world.checkChunksExist(xMin, yMin, zMin, xMax, yMax, zMax) && {
+                world.isAreaLoaded((xMin, yMin, zMin), (xMax, yMax, zMax)) && {
                     var submerged = false
                     val yMinForSubmerge = floor_double(entityBox.minY)
                     val yMaxForSubmerge = floor_double(entityBox.maxY + 1d)
-                    val vector = Vec3.createVectorHelper(0d, 0d, 0d)
+                    var vector = new Vec3(0d, 0d, 0d)
                     for(x <- xMin until xMax; z <- zMin until zMax) {
                         for(y <- yMin until yMax) {
                             val block = blockAt(x, y, z)
@@ -46,11 +46,10 @@ object EntityBoatExtensions {
                                     case e: EntityLivingBase if e.moveForward != 0f || e.moveStrafing != 0f =>
                                     case _ =>
                                         if(block.isInstanceOf[BlockRiver] || dataAt(x, y, z) != 0) {
-                                            block.velocityToAddToEntity(world, x, y, z, boat, vector)
+                                           vector = block.modifyAcceleration(world, (x, y, z), boat, vector)
                                             for(d <- CompassDirections) {
                                                 if(takeDownFrom((x + d.x, y, z + d.z), blockAt(_).isLiquid).length < takeDownFrom((x, y, z), blockAt(_).isLiquid).length) {
-                                                    vector.xCoord -= d.x
-                                                    vector.zCoord -= d.z
+                                                    vector = vector.subtract(d.x, 0, d.z)
                                                 }
                                             }
                                         }
