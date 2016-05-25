@@ -8,10 +8,11 @@ import net.minecraft.block._
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer._
+import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.DefaultStateMapper
-import net.minecraft.client.resources.model.ModelResourceLocation
 import net.minecraft.init.Blocks
 import net.minecraft.util._
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world._
 import net.minecraftforge.client.model.ModelLoader
 
@@ -19,13 +20,13 @@ import net.minecraftforge.client.model.ModelLoader
 object FixedFlowBlockExtensions {
 
     def getFlowDirection(w: IBlockAccess, pos: BlockPos, material: Material,
-                         super_getFlowDirection: ReplacedMethod[BlockLiquid]): Double = {
+                         super_getFlowDirection: ReplacedMethod[BlockLiquid]): Float = {
         if(w.isInstanceOf[World] || w.isInstanceOf[ChunkCache] || w.isInstanceOf[BlockAccess]) {
             blockAt(pos)(w) match {
                 case block: BlockRiver => // Fixed flow
                     val flowVector = block.getFlowVector(w, pos)
-                    if(flowVector.xCoord == 0D && flowVector.zCoord == 0D) -1000D
-                    else atan2(flowVector.zCoord, flowVector.xCoord) - PI / 2D
+                    if(flowVector.xCoord == 0D && flowVector.zCoord == 0D) -1000F
+                    else (atan2(flowVector.zCoord, flowVector.xCoord) - PI / 2D).toFloat
                 case _ => super_getFlowDirection(w, pos, material)
             }
         } else super_getFlowDirection(w, pos, material)
@@ -40,7 +41,7 @@ object FixedFlowBlockExtensions {
     def getModelResourceLocation(state: IBlockState, super_getModelResourceLocation: ReplacedMethod[DefaultStateMapper])
                                 (implicit dsm: DefaultStateMapper): ModelResourceLocation = {
       if(state.getBlock.isInstanceOf[BlockRiverIce])
-        new ModelResourceLocation(Block.blockRegistry.getNameForObject(Blocks.ice), null)
+        new ModelResourceLocation(Block.REGISTRY.getNameForObject(Blocks.ICE), null)
       else
         super_getModelResourceLocation(state)
     }

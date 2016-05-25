@@ -15,17 +15,17 @@ class StreamsClassTransformer extends MethodReplacementTransformer {
     implicit private val transformer = this
 
     protected val methodReplacements = Seq(
-        MethodReplacement("net/minecraft/block/BlockLiquid", "getFlowDirection", "func_180689_a",
-            "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/material/Material;)D",
+        MethodReplacement("net/minecraft/block/BlockLiquid", "getFlowDirection", "func_185697_a",
+            "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/material/Material;)F",
             "streams/block/FixedFlowBlockExtensions/getFlowDirection"),
-        MethodReplacement("net/minecraft/world/World", "handleMaterialAcceleration", "func_72918_a",
-            "(Lnet/minecraft/util/AxisAlignedBB;Lnet/minecraft/block/material/Material;Lnet/minecraft/entity/Entity;)Z",
-            "streams/entity/item/EntityBoatExtensions/handleMaterialAcceleration"),
+        MethodReplacement("net/minecraft/entity/item/EntityBoat", "getUnderwaterStatus", "func_184444_v",
+            "()Lnet/minecraft/entity/item/EntityBoat$Status;",
+            "streams/entity/item/EntityBoatExtensions/getUnderwaterStatus"),
         MethodReplacement("net/minecraftforge/client/model/ModelLoader", "onRegisterAllBlocks",
             "(Lnet/minecraft/client/renderer/BlockModelShapes;)V",
             "streams/block/FixedFlowBlockExtensions/onRegisterAllBlocks"),
         MethodReplacement("net/minecraft/client/renderer/block/statemap/DefaultStateMapper", "getModelResourceLocation", "func_178132_a",
-            "(Lnet/minecraft/block/state/IBlockState;)Lnet/minecraft/client/resources/model/ModelResourceLocation;",
+            "(Lnet/minecraft/block/state/IBlockState;)Lnet/minecraft/client/renderer/block/model/ModelResourceLocation;",
             "streams/block/FixedFlowBlockExtensions/getModelResourceLocation")
     )
 }

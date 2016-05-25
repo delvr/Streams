@@ -1,7 +1,6 @@
 package streams.block
 
 import farseek.block._
-import farseek.block.material._
 import farseek.util.ImplicitConversions._
 import farseek.util.Reflection._
 import farseek.util._
@@ -9,14 +8,19 @@ import farseek.world.Direction._
 import farseek.world._
 import farseek.world.biome._
 import java.util.Random
+import net.minecraft.block.BlockLiquid._
 import net.minecraft.block._
 import net.minecraft.block.material._
 import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.item.EntityFallingBlock
-import net.minecraft.util.MathHelper._
-import net.minecraft.util._
+import net.minecraft.entity.Entity
+import net.minecraft.entity.item._
+import net.minecraft.init.SoundEvents
+import net.minecraft.util.SoundCategory
+import net.minecraft.util.math.MathHelper._
+import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world._
-import net.minecraftforge.fluids.IFluidBlock
+import net.minecraftforge.fluids._
 import net.minecraftforge.fml.common.registry.GameRegistry._
 import net.minecraftforge.fml.common.registry.RegistryDelegate
 import net.minecraftforge.fml.relauncher.Side._
@@ -30,9 +34,9 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
 
     import streams.block.FixedFlowBlock._
 
-    private val baseFlowVector = new Vec3(dx, 0, dz)
+    private val baseFlowVector = new Vec3d(dx, 0, dz)
 
-    cloneObject(classOf[BlockLiquid], liquid.stillBlock, this, _.getType == classOf[RegistryDelegate[Block]])
+    cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, _.getType == classOf[RegistryDelegate[Block]])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
     //setTickRandomly(liquid == Material.water) // For freezing
@@ -42,7 +46,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
         if(populating)
             shoreUp(pos)(w)
         else
-            liquid.flowingBlock.onBlockAdded(w, pos, state) // Checks for hardening & schedules update
+            getFlowingBlock(liquid).onBlockAdded(w, pos, state) // Checks for hardening & schedules update
     }
 
     override def onNeighborBlockChange(w: World, pos: BlockPos, state: IBlockState, formerNeighbor: Block) {
@@ -51,7 +55,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
             if(populating)
                 shoreUp(pos)
             else {
-                liquid.flowingBlock.onNeighborBlockChange(w, pos, state, formerNeighbor) // Checks for hardening
+                getFlowingBlock(liquid).onNeighborBlockChange(w, pos, state, formerNeighbor) // Checks for hardening
                 if(blockAt(pos) == this && (!blockBelow(pos).isSolidOrLiquid || neighbors(pos).map(blockAt(_)).exists(!_.isSolidOrLiquid)))
                     w.scheduleUpdate(pos, this, tickRate(w))
             }
@@ -77,18 +81,18 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
         }
     }
 
-    override def getFlowVector(w: IBlockAccess, pos: BlockPos): Vec3 = { // Normalized in World.handleMaterialAcceleration()
+    override def getFlowVector(w: IBlockAccess, pos: BlockPos): Vec3d = { // Normalized in World.handleMaterialAcceleration()
         implicit val world = w
         if(dataAt(pos) == 0)
             baseFlowVector
         else {
-            val fallingNeighborDirections = CompassDirections.filter(d => blockAt(pos.add(d.x, 1, d.z)).getMaterial == liquid)
+            val fallingNeighborDirections = CompassDirections.filter(d => blockAt(pos.add(d.x, 1, d.z)).material == liquid)
             if(fallingNeighborDirections.isEmpty)
                 baseFlowVector + super.getFlowVector(w, pos)
             else { // Avoid water rising up counter-flow to meet waterfall
             val combinedDirection = fallingNeighborDirections.reduce(_ + _)
                 val dMax = abs_max(combinedDirection.x.toDouble, combinedDirection.z.toDouble)
-                new Vec3(-round(combinedDirection.x / dMax * 2).toInt, 0, -round(combinedDirection.z / dMax * 2).toInt)
+                new Vec3d(-round(combinedDirection.x / dMax * 2).toInt, 0, -round(combinedDirection.z / dMax * 2).toInt)
             }
         }
     }
@@ -99,7 +103,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
             val data = dataAt(pos)
             tryToFlowInto(pos.below, data, isBelow = true)
             pos.neighbors.foreach(tryToFlowInto(_, data))
-            liquid.stillBlock.updateTick(w, pos, state, random) // Set stuff on fire
+            getStaticBlock(liquid).updateTick(w, pos, state, random) // Set stuff on fire
             //tryFreezing(x, y, z)
         }
     }
@@ -114,26 +118,29 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
                 val (ndx, ndz, nDecay) = interpolate(riverNeighbors:_*)
                 displace(xyz, FixedFlowBlock(liquid, ndx, ndz), nDecay)
             } else if(isBelow)
-                displace(xyz, liquid.flowingBlock, 8)
+                displace(xyz, getFlowingBlock(liquid), 8)
             else if(decay < 7)
-                displace(xyz, liquid.flowingBlock, decay + 1)
+                displace(xyz, getFlowingBlock(liquid), decay + 1)
         }
     }
 
     def tryFreezing(xyz: XYZ)(implicit w: World) {
-        if(liquid == Material.water && isFreezing(xyz) && !blockAbove(xyz).isLiquid &&
+        if(liquid == Material.WATER && isFreezing(xyz) && !blockAbove(xyz).isLiquid &&
                 xyz.neighbors.exists(blockAt(_).isSolid) && takeDownFrom(xyz, blockAt(_).isLiquid).length <= 2)
-                setBlockAt(xyz, FixedFlowBlock(Material.ice, dx, dz))
+                setBlockAt(xyz, FixedFlowBlock(Material.ICE, dx, dz))
     }
 
     @SideOnly(CLIENT)
-    override def randomDisplayTick(w: World, pos: BlockPos, state: IBlockState, random: Random) {
-        super.randomDisplayTick(w, pos, state, random)
-        if(liquid == Material.water && dataAt(pos)(w) == 0 && oneChanceOutOf(64)(random))
-            w.playSound(pos.getX + 0.5, pos.getY + 0.5, pos.getZ + 0.5, "liquid.water", random.nextFloat*0.25f + 0.75f, random.nextFloat + 0.5f, false)
+    override def randomDisplayTick(state: IBlockState, w: World, pos: BlockPos, random: Random) {
+        super.randomDisplayTick(state, w, pos, random)
+        if(liquid == Material.WATER && dataAt(pos)(w) == 0 && oneChanceOutOf(64)(random))
+            w.playSound(pos.getX + 0.5, pos.getY + 0.5, pos.getZ + 0.5, SoundEvents.BLOCK_WATER_AMBIENT, SoundCategory.BLOCKS, random.nextFloat * 0.25F + 0.75F, random.nextFloat + 0.5F, false)
     }
 
-    val getFluid = liquid.fluid
+    val getFluid = liquid match {
+        case Material.WATER => FluidRegistry.WATER
+        case Material.LAVA  => FluidRegistry.LAVA
+    }
 
     def drain(w: World, pos: BlockPos, doDrain: Boolean) = null
 
@@ -142,7 +149,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
     def getFilledPercentage(w: World, pos: BlockPos) = {
         implicit val world = w
         val data = dataAt(pos)
-        val decay = if(data != 0 && allNeighbors(pos).exists(blockAbove(_).getMaterial == liquid)) 0f else data.toFloat
+        val decay = if(data != 0 && allNeighbors(pos).exists(blockAbove(_).material == liquid)) 0f else data.toFloat
         (8f - decay) / 9f
     }
 }

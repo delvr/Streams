@@ -26,12 +26,12 @@ object StreamsMod extends FarseekBaseMod {
     @EventHandler override def handle(event: FMLPreInitializationEvent) {
         super.handle(event)
         FixedFlowBlock.getClass // Register river blocks
-        RiverGenerator.surfaceWaterGenerator = new RiverGenerator(Material.water.asInstanceOf[MaterialLiquid], SurfaceDimensionId)
+        RiverGenerator.surfaceWaterGenerator = new RiverGenerator(Material.WATER.asInstanceOf[MaterialLiquid], SurfaceDimensionId)
     }
 
     @EventHandler override def handle(event: FMLLoadCompleteEvent) {
         super.handle(event)
-        val customWaterIds = allBlocks.filter(_.getMaterial == Material.water).map(getIdFromBlock).toSeq.sorted.map("mc_Entity.x == " + _).mkString( " || ")
+        val customWaterIds = allBlocks.filter(_.material == Material.WATER).map(getIdFromBlock(_)).toSeq.sorted.map("mc_Entity.x == " + _).mkString( " || ")
         info("Welcome to Farseek/Streams. Please visit http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2346379-streams-real-flowing-rivers for information and updates.")
         info("Shader configuration: if you wish to use shaders with custom water blocks including Streams river blocks, edit your shader's gbuffers_water.vsh file to replace the line:\n" +
                 s"if (mc_Entity.x == 8 || mc_Entity.x == 9) {\n" +

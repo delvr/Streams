@@ -22,8 +22,8 @@ class RiverStructure(generator: RiverGenerator, boundingBox: StructureBoundingBo
     val liquid = generator.liquid
 
     val seaLevel = liquid match {
-        case Material.water => worldProvider.seaLevel.get
-        case Material.lava => worldProvider.lavaLevel.get
+        case Material.WATER => worldProvider.seaLevel.get
+        case Material.LAVA => worldProvider.lavaLevel.get
     }
     val seaLevelUnits = surfaceLevelUnits(seaLevel)
 

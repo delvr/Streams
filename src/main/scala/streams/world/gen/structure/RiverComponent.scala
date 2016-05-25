@@ -1,7 +1,6 @@
 package streams.world.gen.structure
 
 import farseek.block._
-import farseek.block.material._
 import farseek.util._
 import farseek.world.Direction._
 import farseek.world._
@@ -9,6 +8,7 @@ import farseek.world.biome._
 import farseek.world.gen._
 import farseek.world.gen.structure.StructureComponent
 import java.util.Random
+import net.minecraft.block.BlockLiquid._
 import net.minecraft.block._
 import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks._
@@ -256,7 +256,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 val ySurface = surfaceLevelAt(x, z, dfs) // Surface level adjusted for distance from shore
                 val xyzSurface = (x, ySurface, z)
                 carveValley(x, ySurface, z, dfs, flow, yGround)
-                if(flow && blockAt(xyzSurface).getMaterial != liquid) {
+                if(flow && blockAt(xyzSurface).material != liquid) {
                     // Don't add water yet or it would block caves from digging nearby
                     setBlockAt(xyzSurface, SurfacePlaceholder) // but do prevent chunk block replacement below here
                 }
@@ -294,7 +294,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                     val ySurface = surfaceLevelAt(x, z, dfs)
                     if(isSource && !flow && dfs == 0) {
                         val rockBlock = rockBlockFor(x, ySurface, z)
-                        foreachDownFrom((x, clamped(roofLevels, z) - 1, z), blockAt(_).getMaterial != Material.rock, xyz =>
+                        foreachDownFrom((x, clamped(roofLevels, z) - 1, z), blockAt(_).material != Material.ROCK, xyz =>
                             if(blockAt(xyz).isGround) setBlockAndDataAt(xyz, rockBlock))
                     } else if(!valleys.contains(x, z))
                         carveTunnel(x, ySurface, z, dfs, flow)
@@ -338,26 +338,26 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
             setRiverBlockAt(x, y, z, liquidBlock) // Upwards, to simplify shoring-up
         setRiverBlockAt(x, yDownstreamSurface, z, liquidBlock, flowDecayAt(z))
         for(y <- yDownstreamSurface + 1 to ySurface)
-            setBlockAt((x, y, z), liquid.flowingBlock, 8, notifyNeighbors = false) // Waterfall
+            setBlockAt((x, y, z), getFlowingBlock(liquid), 8, notifyNeighbors = false) // Waterfall
     }
 
     private def clearBlockAt(xyz: XYZ)(implicit blockSetter: BlockSetter) {
         val block = blockAt(xyz)
-        if(block != bedrock && !block.isInstanceOf[BlockRiver])
+        if(block != BEDROCK && !block.isInstanceOf[BlockRiver])
             deleteBlockAt(xyz) // In build step, will notify neighbors and shore up and crossing river
     }
 
     private def setRockBlockAt(xyz: XYZ)(implicit blockSetter: BlockSetter) {
-        if(blockAt(xyz) != bedrock)
+        if(blockAt(xyz) != BEDROCK)
             setBlockAndDataAt(xyz, rockBlockFor(xyz.x, xyz.y, xyz.z), notifyNeighbors = false)
     }
 
     private def setRiverBlockAt(x: Int, y: Int, z: Int, newBlock: BlockRiver, flowDecay: Int = 0)(implicit blockSetter: BlockSetter) {
         blockAt(x, y, z) match {
-            case block: FixedFlowBlock if block.getMaterial == liquid || block.getMaterial == Material.ice =>
+            case block: FixedFlowBlock if block.material == liquid || block.material == Material.ICE =>
                 val (dx, dz, decay) = interpolate((block.dx, block.dz, dataAt(x, y, z)), (newBlock.dx, newBlock.dz, flowDecay))
                 setBlockAndDataAt((x, y, z), (FixedFlowBlock(liquid, dx, dz), decay), notifyNeighbors = false)
-            case block: Block if !(block == bedrock || block.getMaterial == Material.ice || (block.getMaterial == liquid && dataAt(x, y, z) == 0)) =>
+            case block: Block if !(block == BEDROCK || block.material == Material.ICE || (block.material == liquid && dataAt(x, y, z) == 0)) =>
                 setBlockAndDataAt((x, y, z), (newBlock, flowDecay), notifyNeighbors = false)
             case _ =>
         }
@@ -443,7 +443,7 @@ object RiverComponent {
     val BaseTunnelCeilingThickness = 2
     val FloorAndCeilingFudge = new Random
     
-    val SurfacePlaceholder = cobblestone // Opaque and non-fertile
+    val SurfacePlaceholder = COBBLESTONE // Opaque and non-fertile
 
     val MinElevationForRatcheting = 6
 

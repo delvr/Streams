@@ -28,7 +28,7 @@ class RiverMouthComponent(river: RiverStructure, boundingBox: StructureBoundingB
     def isValid(implicit bac: IBlockAccess): Boolean = {
         for(x <- XLine) {
             if(x >= 2 && x <= XPlanMax - 2)
-                if(blockAt(x, river.seaLevel, 0).getMaterial != liquid || blockAt(x, river.seaLevel - MinDepth + 1, 0).getMaterial != liquid ||
+                if(blockAt(x, river.seaLevel, 0).material != liquid || blockAt(x, river.seaLevel - MinDepth + 1, 0).material != liquid ||
                         !blockAt(x, river.seaLevel, ZPlanMax).isSolid)
                     return false
         }
