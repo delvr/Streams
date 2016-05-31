@@ -10,6 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
+          <option value="githubRelease" />
           <option value="curseforge" />
         </list>
       </option>

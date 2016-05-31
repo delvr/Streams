@@ -15,9 +15,9 @@ class StreamsClassTransformer extends MethodReplacementTransformer {
     implicit private val transformer = this
 
     protected val methodReplacements = Seq(
-        MethodReplacement("net/minecraft/block/BlockLiquid", "getFlowDirection", "func_185697_a",
-            "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/material/Material;)F",
-            "streams/block/FixedFlowBlockExtensions/getFlowDirection"),
+        MethodReplacement("net/minecraft/block/BlockLiquid", "getSlopeAngle", "func_189544_a",
+            "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/state/IBlockState;)F",
+            "streams/block/FixedFlowBlockExtensions/getSlopeAngle"),
         MethodReplacement("net/minecraft/entity/item/EntityBoat", "getUnderwaterStatus", "func_184444_v",
             "()Lnet/minecraft/entity/item/EntityBoat$Status;",
             "streams/entity/item/EntityBoatExtensions/getUnderwaterStatus"),

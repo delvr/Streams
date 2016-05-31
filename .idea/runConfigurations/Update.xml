@@ -14,7 +14,7 @@
           <option value="genIntellijRuns" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" value="-Xmx2G" />
     </ExternalSystemSettings>
     <RunnerSettings RunnerId="ExternalSystemTaskRunner" />
     <ConfigurationWrapper RunnerId="ExternalSystemTaskRunner" />

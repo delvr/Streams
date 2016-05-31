@@ -19,17 +19,17 @@ import net.minecraftforge.client.model.ModelLoader
 /** @author delvr */
 object FixedFlowBlockExtensions {
 
-    def getFlowDirection(w: IBlockAccess, pos: BlockPos, material: Material,
-                         super_getFlowDirection: ReplacedMethod[BlockLiquid]): Float = {
+    def getSlopeAngle(w: IBlockAccess, pos: BlockPos, material: Material, state: IBlockState,
+                         super_getSlopeAngle: ReplacedMethod[BlockLiquid]): Float = {
         if(w.isInstanceOf[World] || w.isInstanceOf[ChunkCache] || w.isInstanceOf[BlockAccess]) {
             blockAt(pos)(w) match {
                 case block: BlockRiver => // Fixed flow
-                    val flowVector = block.getFlowVector(w, pos)
+                    val flowVector = block.getFlow(w, pos, state)
                     if(flowVector.xCoord == 0D && flowVector.zCoord == 0D) -1000F
                     else (atan2(flowVector.zCoord, flowVector.xCoord) - PI / 2D).toFloat
-                case _ => super_getFlowDirection(w, pos, material)
+                case _ => super_getSlopeAngle(w, pos, material, state)
             }
-        } else super_getFlowDirection(w, pos, material)
+        } else super_getSlopeAngle(w, pos, material, state)
     }
 
     def onRegisterAllBlocks(shapes: BlockModelShapes, super_onRegisterAllBlocks: ReplacedMethod[ModelLoader]): Unit = {

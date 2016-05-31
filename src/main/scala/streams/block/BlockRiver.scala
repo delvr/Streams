@@ -49,13 +49,13 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
             getFlowingBlock(liquid).onBlockAdded(w, pos, state) // Checks for hardening & schedules update
     }
 
-    override def onNeighborBlockChange(w: World, pos: BlockPos, state: IBlockState, formerNeighbor: Block) {
+    override def neighborChanged(state: IBlockState, w: World, pos: BlockPos, formerNeighbor: Block) {
         if(formerNeighbor.isSolidOrLiquid) {
             implicit val world = w
             if(populating)
                 shoreUp(pos)
             else {
-                getFlowingBlock(liquid).onNeighborBlockChange(w, pos, state, formerNeighbor) // Checks for hardening
+                getFlowingBlock(liquid).neighborChanged(state, w, pos, formerNeighbor) // Checks for hardening
                 if(blockAt(pos) == this && (!blockBelow(pos).isSolidOrLiquid || neighbors(pos).map(blockAt(_)).exists(!_.isSolidOrLiquid)))
                     w.scheduleUpdate(pos, this, tickRate(w))
             }
@@ -81,14 +81,14 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
         }
     }
 
-    override def getFlowVector(w: IBlockAccess, pos: BlockPos): Vec3d = { // Normalized in World.handleMaterialAcceleration()
+    override def getFlow(w: IBlockAccess, pos: BlockPos, state: IBlockState): Vec3d = { // Normalized in World.handleMaterialAcceleration()
         implicit val world = w
         if(dataAt(pos) == 0)
             baseFlowVector
         else {
             val fallingNeighborDirections = CompassDirections.filter(d => blockAt(pos.add(d.x, 1, d.z)).material == liquid)
             if(fallingNeighborDirections.isEmpty)
-                baseFlowVector + super.getFlowVector(w, pos)
+                baseFlowVector + super.getFlow(w, pos, state)
             else { // Avoid water rising up counter-flow to meet waterfall
             val combinedDirection = fallingNeighborDirections.reduce(_ + _)
                 val dMax = abs_max(combinedDirection.x.toDouble, combinedDirection.z.toDouble)
