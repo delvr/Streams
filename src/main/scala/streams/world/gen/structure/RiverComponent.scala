@@ -355,7 +355,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     private def setRiverBlockAt(x: Int, y: Int, z: Int, newBlock: BlockRiver, flowDecay: Int = 0)(implicit blockSetter: BlockSetter) {
         blockAt(x, y, z) match {
             case block: FixedFlowBlock if block.material == liquid || block.material == Material.ICE =>
-                val (dx, dz, decay) = interpolate((block.dx, block.dz, dataAt(x, y, z)), (newBlock.dx, newBlock.dz, flowDecay))
+                val (dx, dz, decay) = interpolate((block.dxFlow, block.dzFlow, dataAt(x, y, z)), (newBlock.dxFlow, newBlock.dzFlow, flowDecay))
                 setBlockAndDataAt((x, y, z), (FixedFlowBlock(liquid, dx, dz), decay), notifyNeighbors = false)
             case block: Block if !(block == BEDROCK || block.material == Material.ICE || (block.material == liquid && dataAt(x, y, z) == 0)) =>
                 setBlockAndDataAt((x, y, z), (newBlock, flowDecay), notifyNeighbors = false)

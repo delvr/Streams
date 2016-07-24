@@ -17,12 +17,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry._
 import net.minecraftforge.fml.common.registry.RegistryDelegate
 
 /** @author delvr */
-class BlockRiverIce(val dx: Int, val dz: Int) extends BlockIce with FixedFlowBlock {
+class BlockRiverIce(val dxFlow: Int, val dzFlow: Int) extends BlockIce with FixedFlowBlock {
 
     cloneObject(classOf[BlockIce], ICE, this, _.getType == classOf[RegistryDelegate[Block]])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
-    registerBlock(this, null, s"river/ice/$dx/$dz")
+    registerBlock(this, null, s"river/ice/$dxFlow/$dzFlow")
 
     override def updateTick(w: World, pos: BlockPos, state: IBlockState, random: Random) {
         implicit val world = w
@@ -33,5 +33,5 @@ class BlockRiverIce(val dx: Int, val dz: Int) extends BlockIce with FixedFlowBlo
 
     override def harvestBlock(w: World, player: EntityPlayer, pos: BlockPos, state: IBlockState, tileEntity: TileEntity, stack: ItemStack) {}
 
-    private def changeToWater(pos: BlockPos)(implicit w: World) = setBlockAt(pos, FixedFlowBlock(Material.WATER, dx, dz), dataAt(pos))
+    private def changeToWater(pos: BlockPos)(implicit w: World) = setBlockAt(pos, FixedFlowBlock(Material.WATER, dxFlow, dzFlow), dataAt(pos))
 }

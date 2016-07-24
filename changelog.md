@@ -1,2 +1,2 @@
-- Updated to Minecraft 1.9.4.
-
+- Fixed boat crash in 1.10.
+- Fixed crash and missing flow animations with latest versions of OptiFine.

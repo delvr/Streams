@@ -12,8 +12,6 @@ class StreamsCoreMod extends FarseekBaseCoreMod {
 
 class StreamsClassTransformer extends MethodReplacementTransformer {
 
-    implicit private val transformer = this
-
     protected val methodReplacements = Seq(
         MethodReplacement("net/minecraft/block/BlockLiquid", "getSlopeAngle", "func_189544_a",
             "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/state/IBlockState;)F",

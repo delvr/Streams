@@ -25,7 +25,7 @@ object EntityBoatExtensions {
     var underWater = false
     val pos = PooledMutableBlockPos.retain
     try for(x <- xMin until xMax; y <- yMin until yMax; z <- zMin until zMax) {
-      pos.set(x, y, z)
+      pos.setPos(x, y, z)
       val state = boat.worldObj.getBlockState(pos)
       if(state.getMaterial == Material.WATER && yTop < EntityBoat.getLiquidHeight(state, boat.worldObj, pos).toDouble) {
         if(state.getBlock.isInstanceOf[BlockRiver])

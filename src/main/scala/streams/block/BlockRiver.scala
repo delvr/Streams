@@ -12,13 +12,11 @@ import net.minecraft.block.BlockLiquid._
 import net.minecraft.block._
 import net.minecraft.block.material._
 import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
 import net.minecraft.entity.item._
 import net.minecraft.init.SoundEvents
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.math.MathHelper._
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math._
 import net.minecraft.world._
 import net.minecraftforge.fluids._
 import net.minecraftforge.fml.common.registry.GameRegistry._
@@ -30,17 +28,17 @@ import scala.math._
 /** @author delvr */
 // IFluidBlock implementation is mostly for Entity.isInsideOfMaterial calculations.
 // We don't use it as a base for various reasons, mostly because height percentage don't line up with normal water.
-class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends BlockLiquid(liquid) with IFluidBlock with FixedFlowBlock {
+class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) extends BlockLiquid(liquid) with IFluidBlock with FixedFlowBlock {
 
     import streams.block.FixedFlowBlock._
 
-    private val baseFlowVector = new Vec3d(dx, 0, dz)
+    private val baseFlowVector = new Vec3d(dxFlow, 0, dzFlow)
 
     cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, _.getType == classOf[RegistryDelegate[Block]])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
     //setTickRandomly(liquid == Material.water) // For freezing
-    registerBlock(this, null, s"river/$getUnlocalizedName/$dx/$dz")
+    registerBlock(this, null, s"river/$getUnlocalizedName/$dxFlow/$dzFlow")
 
     override def onBlockAdded(w: World, pos: BlockPos, state: IBlockState) {
         if(populating)
@@ -82,11 +80,10 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
     }
 
     override def getFlow(w: IBlockAccess, pos: BlockPos, state: IBlockState): Vec3d = { // Normalized in World.handleMaterialAcceleration()
-        implicit val world = w
-        if(dataAt(pos) == 0)
+        if(blockStateMetadata(state) == 0)
             baseFlowVector
         else {
-            val fallingNeighborDirections = CompassDirections.filter(d => blockAt(pos.add(d.x, 1, d.z)).material == liquid)
+            val fallingNeighborDirections = CompassDirections.filter(d => w.getBlockState(pos.add(d.x, 1, d.z)).getBlock.material == liquid)
             if(fallingNeighborDirections.isEmpty)
                 baseFlowVector + super.getFlow(w, pos, state)
             else { // Avoid water rising up counter-flow to meet waterfall
@@ -111,7 +108,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
     private def tryToFlowInto(xyz: XYZ, decay: Int, isBelow: Boolean = false)(implicit w: World) {
         if(!blockAt(xyz).isSolidOrLiquid) {
             val riverNeighbors = xyz.neighbors.flatMap{case(nx, ny, nz) => blockAt(nx, xyz.y, nz) match {
-                case riverBlock: FixedFlowBlock => Some((riverBlock.dx, riverBlock.dz, dataAt(nx, ny, nz)))
+                case riverBlock: FixedFlowBlock => Some((riverBlock.dxFlow, riverBlock.dzFlow, dataAt(nx, ny, nz)))
                 case _ => None
             }}
             if(riverNeighbors.size >= 2) {
@@ -127,7 +124,7 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
     def tryFreezing(xyz: XYZ)(implicit w: World) {
         if(liquid == Material.WATER && isFreezing(xyz) && !blockAbove(xyz).isLiquid &&
                 xyz.neighbors.exists(blockAt(_).isSolid) && takeDownFrom(xyz, blockAt(_).isLiquid).length <= 2)
-                setBlockAt(xyz, FixedFlowBlock(Material.ICE, dx, dz))
+                setBlockAt(xyz, FixedFlowBlock(Material.ICE, dxFlow, dzFlow))
     }
 
     @SideOnly(CLIENT)

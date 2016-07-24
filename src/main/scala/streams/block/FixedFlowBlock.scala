@@ -8,8 +8,8 @@ import scala.math._
 
 /** @author delvr */
 trait FixedFlowBlock extends Block {
-    def dx: Int
-    def dz: Int
+    def dxFlow: Int
+    def dzFlow: Int
 }
 
 object FixedFlowBlock {
