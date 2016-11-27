@@ -12,11 +12,13 @@ import net.minecraft.block.BlockLiquid._
 import net.minecraft.block._
 import net.minecraft.block.material._
 import net.minecraft.block.state.IBlockState
+import net.minecraft.entity.Entity
 import net.minecraft.entity.item._
 import net.minecraft.init.SoundEvents
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.math.MathHelper._
-import net.minecraft.util.math._
+import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world._
 import net.minecraftforge.fluids._
 import net.minecraftforge.fml.common.registry.GameRegistry._
@@ -119,12 +121,6 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
             else if(decay < 7)
                 displace(xyz, getFlowingBlock(liquid), decay + 1)
         }
-    }
-
-    def tryFreezing(xyz: XYZ)(implicit w: World) {
-        if(liquid == Material.WATER && isFreezing(xyz) && !blockAbove(xyz).isLiquid &&
-                xyz.neighbors.exists(blockAt(_).isSolid) && takeDownFrom(xyz, blockAt(_).isLiquid).length <= 2)
-                setBlockAt(xyz, FixedFlowBlock(Material.ICE, dxFlow, dzFlow))
     }
 
     @SideOnly(CLIENT)

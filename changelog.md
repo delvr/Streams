@@ -1,2 +1,6 @@
-- Fixed boat crash in 1.10.
-- Fixed crash and missing flow animations with latest versions of OptiFine.
+- Requires Farseek 2.0+.
+- Now [compatible with SpongeForge](https://github.com/delvr/Farseek/issues/16).
+- Fixed cobblestone and [snow](https://github.com/Team-RTG/Realistic-Terrain-Generation/issues/1030) river sections with certain worldgen mods such as RTG. (Note: as a side-effect of this change, some worldgen caves that would have opened onto river banks in previous versions no longer do.)
+- Possibly fixed a [memory leak in StructureGenerationChunkProvider](https://github.com/delvr/Farseek/issues/8) (to be confirmed).
+- Fixed an [infinite loop with certain mod combinations](https://github.com/delvr/Streams/issues/26) such as HarvestCraft and MobHunter in an RTG world.
+- Removed unused RiverIce blocks (will return in v1.0). You may get a warning from older worlds about those blocks missing.

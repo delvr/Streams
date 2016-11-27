@@ -4,27 +4,22 @@ import farseek.FarseekBaseMod
 import farseek.block._
 import farseek.world._
 import net.minecraft.block.Block._
-import net.minecraft.block.material.{Material, MaterialLiquid}
+import net.minecraft.block.material._
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.event.{FMLLoadCompleteEvent, FMLPreInitializationEvent}
+import net.minecraftforge.fml.common.event._
 import streams.block._
 import streams.world.gen.structure.RiverGenerator
 
 /** @author delvr */
-@Mod(modid = "Streams", modLanguage = "scala")
+@Mod(modid = "streams", modLanguage = "scala")
 object StreamsMod extends FarseekBaseMod {
 
-    val name = "Streams"
-    val description = "Adds flowing rivers to the world."
-    val authors = Seq("delvr")
     val configuration = None
 
-    override val requiresNewWorld = false
     override val existingWorldWarning = Some("Can cause unexpected behavior such as incomplete rivers.")
 
-    @EventHandler override def handle(event: FMLPreInitializationEvent) {
-        super.handle(event)
+    @EventHandler def handle(event: FMLPreInitializationEvent) {
         FixedFlowBlock.getClass // Register river blocks
         RiverGenerator.surfaceWaterGenerator = new RiverGenerator(Material.WATER.asInstanceOf[MaterialLiquid], SurfaceDimensionId)
     }

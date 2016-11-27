@@ -1,19 +1,16 @@
-package streams.entity.item
+package streams.entity
 
-import farseek.core.ReplacedMethod
-import net.minecraft.block._
+import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
 import net.minecraft.entity.item.EntityBoat
 import net.minecraft.entity.item.EntityBoat.Status._
-import net.minecraft.util.math.BlockPos._
+import net.minecraft.util.math.BlockPos.PooledMutableBlockPos
 import net.minecraft.util.math.MathHelper._
 import streams.block.BlockRiver
 
-/** @author delvr */
-object EntityBoatExtensions {
+package object item {
 
-  def getUnderwaterStatus(super_getUnderwaterStatus: ReplacedMethod[EntityBoat])
-                         (implicit boat: EntityBoat): EntityBoat.Status = {
+  def getUnderwaterStatus(boat: EntityBoat): EntityBoat.Status = {
     val box = boat.getEntityBoundingBox
     val yTop = box.maxY + 0.001D
     val xMin =   floor_double    (box.minX)

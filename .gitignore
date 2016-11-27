@@ -3,3 +3,4 @@
 /libs/
 /run/
 /gradle/wrapper/gradle-wrapper.jar
+/src/main/resources/mcmod.info
