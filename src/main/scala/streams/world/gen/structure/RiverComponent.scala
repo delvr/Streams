@@ -14,8 +14,8 @@ import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks._
 import net.minecraft.world._
 import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraftforge.common.BiomeDictionary
 import net.minecraftforge.common.BiomeDictionary.Type._
-import net.minecraftforge.common.BiomeDictionary._
 import scala.Array._
 import scala.collection.mutable
 import scala.math._
@@ -306,7 +306,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                         if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
                             val yBottom = yDownFrom(ySurface - 1).find(blockAt(x, _, z).isSolid).get
                             val bottomBlock =
-                              if(isBiomeOfType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
+                              if(BiomeDictionary.hasType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
                               else sandBlockFor(x, yBottom, z)
                             foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
                         }

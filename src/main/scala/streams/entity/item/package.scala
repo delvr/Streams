@@ -13,18 +13,18 @@ package object item {
   def getUnderwaterStatus(boat: EntityBoat): EntityBoat.Status = {
     val box = boat.getEntityBoundingBox
     val yTop = box.maxY + 0.001D
-    val xMin =   floor_double    (box.minX)
-    val xMax = ceiling_double_int(box.maxX)
-    val yMin =   floor_double    (box.maxY)
-    val yMax = ceiling_double_int(yTop)
-    val zMin =   floor_double    (box.minZ)
-    val zMax = ceiling_double_int(box.maxZ)
+    val xMin = floor(box.minX)
+    val xMax = ceil (box.maxX)
+    val yMin = floor(box.maxY)
+    val yMax = ceil (yTop)
+    val zMin = floor(box.minZ)
+    val zMax = ceil (box.maxZ)
     var underWater = false
     val pos = PooledMutableBlockPos.retain
     try for(x <- xMin until xMax; y <- yMin until yMax; z <- zMin until zMax) {
       pos.setPos(x, y, z)
-      val state = boat.worldObj.getBlockState(pos)
-      if(state.getMaterial == Material.WATER && yTop < EntityBoat.getLiquidHeight(state, boat.worldObj, pos).toDouble) {
+      val state = boat.world.getBlockState(pos)
+      if(state.getMaterial == Material.WATER && yTop < BlockLiquid.getLiquidHeight(state, boat.world, pos).toDouble) {
         if(state.getBlock.isInstanceOf[BlockRiver])
           return IN_WATER
         if(state.getValue(BlockLiquid.LEVEL).intValue != 0)

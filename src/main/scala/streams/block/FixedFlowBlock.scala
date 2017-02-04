@@ -34,7 +34,7 @@ object FixedFlowBlock {
         if(dx == 0 && dz == 0)
             (0, 0)
         else {
-            val dMax = MathHelper.abs_max(dx, dz)
+            val dMax = MathHelper.absMax(dx, dz)
             (round(dx / dMax * 2).toInt, round(dz / dMax * 2).toInt)
         }
     }

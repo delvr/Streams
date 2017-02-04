@@ -12,25 +12,18 @@ import net.minecraft.block.BlockLiquid._
 import net.minecraft.block._
 import net.minecraft.block.material._
 import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
 import net.minecraft.entity.item._
 import net.minecraft.init.SoundEvents
 import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.MathHelper._
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math._
 import net.minecraft.world._
-import net.minecraftforge.fluids._
-import net.minecraftforge.fml.common.registry.GameRegistry._
-import net.minecraftforge.fml.common.registry.RegistryDelegate
+import net.minecraftforge.fml.common.registry._
 import net.minecraftforge.fml.relauncher.Side._
 import net.minecraftforge.fml.relauncher.SideOnly
 import scala.math._
 
 /** @author delvr */
-// IFluidBlock implementation is mostly for Entity.isInsideOfMaterial calculations.
-// We don't use it as a base for various reasons, mostly because height percentage don't line up with normal water.
-class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) extends BlockLiquid(liquid) with IFluidBlock with FixedFlowBlock {
+class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) extends BlockLiquid(liquid) with FixedFlowBlock {
 
     import streams.block.FixedFlowBlock._
 
@@ -39,8 +32,7 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
     cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, _.getType == classOf[RegistryDelegate[Block]])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
-    //setTickRandomly(liquid == Material.water) // For freezing
-    registerBlock(this, null, s"river/$getUnlocalizedName/$dxFlow/$dzFlow")
+    GameRegistry.register(setRegistryName("streams", s"river/$getUnlocalizedName/$dxFlow/$dzFlow"))
 
     override def onBlockAdded(w: World, pos: BlockPos, state: IBlockState) {
         if(populating)
@@ -49,13 +41,13 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
             getFlowingBlock(liquid).onBlockAdded(w, pos, state) // Checks for hardening & schedules update
     }
 
-    override def neighborChanged(state: IBlockState, w: World, pos: BlockPos, formerNeighbor: Block) {
+    override def neighborChanged(state: IBlockState, w: World, pos: BlockPos, formerNeighbor: Block, neighborPos: BlockPos) {
         if(formerNeighbor.isSolidOrLiquid) {
             implicit val world = w
             if(populating)
                 shoreUp(pos)
             else {
-                getFlowingBlock(liquid).neighborChanged(state, w, pos, formerNeighbor) // Checks for hardening
+                getFlowingBlock(liquid).neighborChanged(state, w, pos, formerNeighbor, neighborPos) // Checks for hardening
                 if(blockAt(pos) == this && (!blockBelow(pos).isSolidOrLiquid || neighbors(pos).map(blockAt(_)).exists(!_.isSolidOrLiquid)))
                     w.scheduleUpdate(pos, this, tickRate(w))
             }
@@ -90,7 +82,7 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
                 baseFlowVector + super.getFlow(w, pos, state)
             else { // Avoid water rising up counter-flow to meet waterfall
             val combinedDirection = fallingNeighborDirections.reduce(_ + _)
-                val dMax = abs_max(combinedDirection.x.toDouble, combinedDirection.z.toDouble)
+                val dMax = MathHelper.absMax(combinedDirection.x.toDouble, combinedDirection.z.toDouble)
                 new Vec3d(-round(combinedDirection.x / dMax * 2).toInt, 0, -round(combinedDirection.z / dMax * 2).toInt)
             }
         }
@@ -128,21 +120,5 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
         super.randomDisplayTick(state, w, pos, random)
         if(liquid == Material.WATER && dataAt(pos)(w) == 0 && oneChanceOutOf(64)(random))
             w.playSound(pos.getX + 0.5, pos.getY + 0.5, pos.getZ + 0.5, SoundEvents.BLOCK_WATER_AMBIENT, SoundCategory.BLOCKS, random.nextFloat * 0.25F + 0.75F, random.nextFloat + 0.5F, false)
-    }
-
-    val getFluid = liquid match {
-        case Material.WATER => FluidRegistry.WATER
-        case Material.LAVA  => FluidRegistry.LAVA
-    }
-
-    def drain(w: World, pos: BlockPos, doDrain: Boolean) = null
-
-    def canDrain(w: World, pos: BlockPos) = false
-
-    def getFilledPercentage(w: World, pos: BlockPos) = {
-        implicit val world = w
-        val data = dataAt(pos)
-        val decay = if(data != 0 && allNeighbors(pos).exists(blockAbove(_).material == liquid)) 0f else data.toFloat
-        (8f - decay) / 9f
     }
 }
