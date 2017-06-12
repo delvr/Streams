@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Update" type="GradleRunConfiguration" factoryName="Gradle" singleton="true">
+  <configuration default="false" name="Update Forge" type="GradleRunConfiguration" factoryName="Gradle" singleton="true">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -11,9 +11,10 @@
       <option name="taskNames">
         <list>
           <option value="setupDecompWorkspace" />
+          <option value="genIntellijRuns" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" value="-Xmx2G" />
     </ExternalSystemSettings>
     <RunnerSettings RunnerId="ExternalSystemTaskRunner" />
     <ConfigurationWrapper RunnerId="ExternalSystemTaskRunner" />

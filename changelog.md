@@ -1,0 +1,6 @@
+- Improved vanilla and TFC performance (see Farseek changelog).
+- Fixed cobblestone and snow river sections with certain worldgen mods such as RTG. (Note: as a side-effect of this change, some worldgen caves that would have opened onto river banks in previous versions no longer do.)
+- Possibly fixed stone and ice "bridges" over rivers.
+- Fixed missing tree trunks on stream banks in TFC.
+- Removed unused RiverIce blocks (will return in v1.0). You may get a warning from older worlds about those blocks missing.
+- Requires Farseek 2.0+. 

@@ -1,25 +1,14 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { name = "forge"   ; url = "http://files.minecraftforge.net/maven" }
-        maven { name = "sonatype"; url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "http://files.minecraftforge.net/maven" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
-    dependencies { classpath "net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT" }
+    dependencies {
+        classpath "net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT"
+        classpath "co.riiid:gradle-github-plugin:0.4.2"
+    }
 }
 
-apply plugin: "scala"
-apply plugin: "forge"
-
-apply from: zipTree(fileTree("libs"){include "*Farseek-deobf*.jar"}.singleFile).matching{include "common.gradle"}.singleFile
-
-task srcJar(type: Jar) {
-    appendix = "src"
-    from sourceSets.main.allSource
-}
-
-task deobfJar(type: Jar) {
-    appendix = "deobf"
-    from sourceSets.main.output
-}
-
-tasks.jar.dependsOn("srcJar", "deobfJar")
+apply from: zipTree(fileTree("libs"){include "Farseek-*-deobf.jar"}.singleFile).matching{include "common.gradle"}.singleFile

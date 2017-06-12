@@ -15,10 +15,11 @@ trait FixedFlowBlock extends Block {
 object FixedFlowBlock {
 
     private val FixedFlowBlocks: Map[(Material, Int, Int), FixedFlowBlock] =
-        (for(material <- Seq(Material.water, Material.lava, Material.ice); dx <- -2 to 2; dz <- -2 to 2; if abs(dx) == 2 || abs(dz) == 2 || (dx == 0 && dz == 0))
-        yield (material, dx, dz) -> (if(material == Material.ice) new BlockRiverIce(dx, dz) else new BlockRiver(material.asInstanceOf[MaterialLiquid], dx, dz))).toMap
+      (for(material <- Seq(Material.water, Material.lava).map(_.asInstanceOf[MaterialLiquid]);
+           dx <- -2 to 2; dz <- -2 to 2; if abs(dx) == 2 || abs(dz) == 2 || (dx == 0 && dz == 0))
+        yield (material, dx, dz) -> new BlockRiver(material, dx, dz)).toMap
 
-    def apply(material: Material): Seq[FixedFlowBlock] = FixedFlowBlocks.filter(_._1._1 == material).values.toSeq
+  def apply(material: Material): Seq[FixedFlowBlock] = FixedFlowBlocks.filter(_._1._1 == material).values.toSeq
 
     def apply(material: Material, flow: XZ): FixedFlowBlock = apply(material, flow.x, flow.z)
 

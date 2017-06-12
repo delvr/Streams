@@ -1,8 +1,6 @@
 package streams.world.gen.structure
 
 import farseek.util.ImplicitConversions._
-import farseek.util._
-import farseek.world._
 import farseek.world.gen._
 import farseek.world.gen.structure._
 import java.util.Random
@@ -24,31 +22,27 @@ class RiverGenerator(val liquid: MaterialLiquid, dimensionId: Int) extends Struc
 
     def riverKey(xChunk: Int, zChunk: Int) = (iRiverChunk(xChunk), iRiverChunk(zChunk))
 
-    override protected def generate(xChunk: Int, zChunk: Int, blocks: Array[Block], datas: Array[Byte])(implicit worldAccess: IBlockAccess) {
+    override protected def generate(worldProvider: WorldProvider, xChunk: Int, zChunk: Int, blocks: Array[Block], datas: Array[Byte]) {
         val xRiverChunk = iRiverChunk(xChunk)
         val zRiverChunk = iRiverChunk(zChunk)
         val riverKey = (xRiverChunk, zRiverChunk)
         if(!structures.contains(riverKey)) {
-            implicit val random = chunkRandom(xRiverChunk, zRiverChunk)(worldAccess.worldProvider)
+            implicit val chunkProvider = new StructureGenerationBlockAccess(StructureGenerationChunkProvider(worldProvider))
+            implicit val random = chunkRandom(xRiverChunk, zRiverChunk)(worldProvider)
             val bounds = sizedBox(xRiverChunk*16, zRiverChunk*16, riverSize, riverSize)
             val riverOption = createStructure(bounds).flatMap { river =>
-                river.generate(worldAccess, random)
+                river.generate()
                 if(river.isValid) {
                     river.commit()
                     debug(river.debug)
                     Some(river)
-                } else {
-                    river.clear()
-                    None
-                }
+                } else None
             }
             structures(riverKey) = riverOption
         }
         structures.get(riverKey).foreach(_.foreach{ river =>
-            val worldProvider = worldAccess.worldProvider
-            val yBottom = if(tfcLoaded && worldAccess.isSurfaceWorld) 128 else 0
-            val blockArray = new ChunkBlockArrayAccess(worldProvider, xChunk, zChunk, blocks, Option(datas), yBottom)
-            river.carveValleys(blockArray, chunkRandom(xChunk, zChunk)(worldProvider)) // 1st pass, before chunk terrain replacement
+            val blockArray = new ChunkBlockArrayAccess(worldProvider, xChunk, zChunk, blocks, Option(datas))
+            river.carveValleys(blockArray, chunkRandom(xChunk, zChunk)(worldProvider)) // 1st pass, before chunk terrain replacement (for TFC: after)
         })
     }
 

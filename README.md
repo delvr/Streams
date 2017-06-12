@@ -1,6 +1,6 @@
 # Streams
 
-The Streams mod introduces real flowing rivers, with a true current, to Minecraft 1.7.10.
+The Streams mod introduces real flowing rivers, with a true current, to Minecraft.
 These rivers are generated in the world using custom non-decaying flowing blocks and are much larger than anything the
 player could create using buckets. They originate in multiple sources and flow down the terrain through slopes and waterfalls,
 joining together into wider rivers until they reach a body of water at sea level.
@@ -14,28 +14,22 @@ Questions about the mod itself are best posted to the [discussion thread](http:/
 Note: IDE-specific instructions are for IntelliJ IDEA; see the ForgeGradle documentation for Eclipse equivalents.
 
 ## Dependencies Setup
-
-Streams requires [Farseek](https://github.com/delvr/Farseek) and [TerraFirmaCraft](https://github.com/Deadrik/TFCraft) (TFC).
+Streams compilation requires [Farseek](https://github.com/delvr/Farseek) and [TerraFirmaCraft](https://github.com/Deadrik/TFCraft) (TFC).
 Compatible versions are specified using [Maven version range syntax](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN402)
-in the `farseekDependency` and `tfcDependency` properties of `gradle.properties`.
-The build process of both Farseek and TFC will output `-deobf` and `-src` jars; for each dependency place both jars in Streams's `lib` subdirectory before running `setupDecompWorkspace`.
+in the `modDependencies` and `modOptionalDependencies` properties of `gradle.properties`.
+The build process of both Farseek and TFC will output `-deobf` and `-src` jars; for each dependency place both jars in Streams's `libs` subdirectory before running `setupDecompWorkspace`.
 
 ## IDE Setup
+The IDEA `Update Forge` run configuration will run `setupDecompWorkspace` and `genIntellijRuns`.
+After running `Update Forge`, synchronize Gradle in IntelliJ IDEA to set up module configs.
 
-The IDEA `Update` run configuration will run `setupDecompWorkspace`.
-After running `setupDecompWorkspace`, synchronize Gradle in IntelliJ IDEA to set up module configs.
-
-## Building
-
-Run the `build` configuration. Jars will be generated in `build/libs`.
+If using IntelliJ 2016 or later, make sure the Gradle plugin setting "Create separate module per source set" is NOT checked.
 
 ## Testing
-
-Run configs are not in source control but you can create your own using these properties for the client-side:
-
-* Main class: `net.minecraft.launchwrapper.Launch`
-* VM options: `-Djava.library.path=$USER_HOME$/.gradle/caches/minecraft/net/minecraft/minecraft_natives/1.7.10 -Dfml.coreMods.load=farseek.core.FarseekCoreMod,com.bioxx.tfc.TFCASMLoadingPlugin,streams.core.StreamsCoreMod`
-* Program arguments: `--tweakClass cpw.mods.fml.common.launcher.FMLTweaker --assetsDir $USER_HOME$/.gradle/caches/minecraft/assets --assetIndex 1.7.10 --accessToken=1234 --userProperties={}`
+Run the generated `Minecraft Client` or `Minecraft Server` configuration.
 
 Note: TFC is required at compile time but optional at runtime. To test without TFC in IDEA,
 switch the TFC dependencies from `Compile` to `Provided` in your module properties after synchronizing Gradle.
+
+## Building
+Run the `build` configuration. Jars will be generated in `build/libs`.

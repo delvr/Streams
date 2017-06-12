@@ -13,7 +13,7 @@ import farseek.world._
 import farseek.world.biome._
 import java.util.Random
 import net.minecraft.block._
-import net.minecraft.block.material.{Material, MaterialLiquid}
+import net.minecraft.block.material._
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityFallingBlock
 import net.minecraft.util.MathHelper._
@@ -119,12 +119,6 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
             else if(decay < 7)
                 displace(xyz, liquid.flowingBlock, decay + 1)
         }
-    }
-
-    def tryFreezing(xyz: XYZ)(implicit w: World) {
-        if(liquid == Material.water && isFreezing(xyz) && !blockAbove(xyz).isLiquid &&
-                xyz.neighbors.exists(blockAt(_).isSolid) && takeDownFrom(xyz, blockAt(_).isLiquid).length <= 2)
-                setBlockAt(xyz, FixedFlowBlock(Material.ice, dx, dz))
     }
 
     override def onEntityCollidedWithBlock(w: World, x: Int, y: Int, z: Int, entity: Entity) {

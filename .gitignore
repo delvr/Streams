@@ -1,7 +1,6 @@
-/*.iml
 /.gradle/
-/build*/
-/doc*/
-/lib*/
-/run*/
+/build/
+/libs/
+/run/
 /gradle/wrapper/gradle-wrapper.jar
+/src/main/resources/mcmod.info

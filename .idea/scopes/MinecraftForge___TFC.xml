@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="MinecraftForge + TFC" pattern="lib:com.bioxx.tfc..*||lib:cpw.mods.fml..*||lib:assets.terrafirmacraft..*||lib:net.minecraft..*||lib:assets.fml..*||lib:assets.forge..*||lib:assets.minecraft..*||lib:com.mojang..*||lib:assets.realms..*||lib:farseek..*||lib:common||src:*..*" />
+</component>
