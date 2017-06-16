@@ -1,5 +1,6 @@
 package streams.world.gen.structure
 
+import com.bioxx.tfc.Core.TFC_Climate.getCacheManager
 import farseek.block._
 import farseek.block.material._
 import farseek.util._
@@ -274,7 +275,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
             val exposedBlock = blockAndDataAt(xyzFloor)
             if(exposedBlock.block.getMaterial.blocksMovement) {
                 val wxz = cs.xzWorld(x, z)
-                val surfaceBlock = tfcGeneratingSurfaceBlockAt(wxz, blockSetter.worldProvider.worldObj)
+                val surfaceBlock = tfcSurfaceBlockAt(wxz, blockSetter.worldProvider.worldObj)
                 if(exposedBlock != surfaceBlock)
                     setBlockAndDataAt(xyzFloor, surfaceBlock, notifyNeighbors = false)
             }
@@ -322,7 +323,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                             setRiverBlockAt((x, y, z), blockRiver)
                         if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
                             val bottomBlock =
-                                if(tfcLoaded) tfcPopulatingSurfaceBlockAt(wxz, blockSetter.worldProvider.worldObj, sedimentOnly = true)
+                                if(tfcLoaded) tfcSurfaceBlockAt(wxz, blockSetter.worldProvider.worldObj, sedimentOnly = true)
                                 else if(isBiomeOfType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
                                 else sandBlockFor(x, yBottom, z)
                             foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
@@ -345,7 +346,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 val xyzCeiling = (x, yCeiling, z)
                 val ceiling = blockAt(xyzCeiling)
                 if(ceiling.isGranular) {
-                    val rock = if(tfcLoaded) tfcGeneratingRockAt(cs.xzWorld(x, z), blockSetter.worldProvider.worldObj) else rockBlockFor(x, yCeiling, z)
+                    val rock = rockBlockFor(x, yCeiling, z)
                     setBlockAndDataAt(xyzCeiling, rock, notifyNeighbors = false) // Harden ceiling
                     if(stalactite) setBlockAndDataAt(xyzCeiling.above, rock, notifyNeighbors = false)
                 }

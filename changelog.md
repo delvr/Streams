@@ -1,6 +1,5 @@
-- Improved vanilla and TFC performance (see Farseek changelog).
-- Fixed cobblestone and snow river sections with certain worldgen mods such as RTG. (Note: as a side-effect of this change, some worldgen caves that would have opened onto river banks in previous versions no longer do.)
-- Possibly fixed stone and ice "bridges" over rivers.
-- Fixed missing tree trunks on stream banks in TFC.
-- Removed unused RiverIce blocks (will return in v1.0). You may get a warning from older worlds about those blocks missing.
-- Requires Farseek 2.0+. 
+- TerraFirmaCraft-specific patch release, not required for vanilla game.
+- Fixed TFC ground material types near streams.
+- Reduced chance of TFC caves, ravines and ponds intersecting streams.
+- Additional fix for Streams generation performance in TFC.
+- Warning: will cause TFC streams to generate in different places from before; use caution with existing worlds.
