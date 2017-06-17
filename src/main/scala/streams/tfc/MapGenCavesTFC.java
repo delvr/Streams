@@ -137,7 +137,7 @@ public class MapGenCavesTFC extends MapGenBaseTFC
                                     //delvr start
                                     int roofOffset = 1;
                                     while (TFC_Core.isSoilWAILA(idArray[index+roofOffset])) roofOffset++;
-                                    if (idArray[index + roofOffset].getMaterial().isLiquid())
+                                    if (idArray[index + roofOffset] != null && idArray[index + roofOffset].getMaterial().isLiquid())
                                         var58 = true;
                                     //delvr end
 									if (y != var57 - 1 && xCoord != var55 && xCoord != var36 - 1 && zCoord != var56 && zCoord != var40 - 1)

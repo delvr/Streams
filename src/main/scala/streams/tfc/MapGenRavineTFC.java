@@ -133,7 +133,7 @@ public class MapGenRavineTFC extends MapGenBaseTFC
                                     //delvr start
                                     int roofOffset = 1;
                                     while (TFC_Core.isSoilWAILA(blockArray[index+roofOffset])) roofOffset++;
-									if (blockArray[index + roofOffset].getMaterial().isLiquid())
+									if (blockArray[index + roofOffset] != null && blockArray[index + roofOffset].getMaterial().isLiquid())
 										isBlocked = true;
                                     //delvr end
 									if (y != minY - 1 && x != xMin && x != xMax - 1 && z != zMin && z != zMax - 1)

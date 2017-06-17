@@ -1,5 +1,2 @@
 - TerraFirmaCraft-specific patch release, not required for vanilla game.
-- Fixed TFC ground material types near streams.
-- Reduced chance of TFC caves, ravines and ponds intersecting streams.
-- Additional fix for Streams generation performance in TFC.
-- Warning: will cause TFC streams to generate in different places from before; use caution with existing worlds.
+- Fixed possible NPE in caves/ravines generation.
