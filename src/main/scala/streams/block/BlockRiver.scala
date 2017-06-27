@@ -69,7 +69,9 @@ class BlockRiver(liquid: MaterialLiquid, val dx: Int, val dz: Int) extends Block
     override def breakBlock(w: World, x: Int, y: Int, z: Int, block: Block, data: Int) {
         implicit val world = w
         val xyz = (x, y, z)
-        if(!w.scheduledUpdatesAreImmediate && blockAt(xyz).isSolid) { // Prevent river damming from block generation or fallen sand/gravel etc.
+        val newBlock = blockAt(xyz)
+        // Prevent river damming from block generation or fallen sand/gravel etc. Rock stays to avoid infinite loops with lava-produced cobble in TFC
+        if(!w.scheduledUpdatesAreImmediate && newBlock.isSolid && newBlock.getMaterial != Material.rock) {
             if(populating || entityPresent(xyz, classOf[EntityFallingBlock]) ||
                     (tfcLoaded && entityPresent(xyz, classOf[EntityFallingBlockTFC])) || blocksFallInstantlyAt(xyz))
                 setBlockAt(xyz, block, data, notifyNeighbors = false)

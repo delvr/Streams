@@ -36,8 +36,6 @@ import java.util.Random;
 
 public class TFCChunkProviderGenerate extends ChunkProviderGenerate
 {
-    public static boolean delvrTfcFixes = false;
-
 	/** RNG. */
 	private Random rand;
 
@@ -104,7 +102,7 @@ public class TFCChunkProviderGenerate extends ChunkProviderGenerate
 	private int[] chunkHeightMap = new int[256];
 
 	private MapGenCavesTFC caveGen = new MapGenCavesTFC();
-	private MapGenRavineTFC surfaceRavineGen = new MapGenRavineTFC(delvrTfcFixes ? 145: 125, 30);//surface //delvr
+	private MapGenRavineTFC surfaceRavineGen = new MapGenRavineTFC(125, 30);//surface
 	private MapGenRavineTFC ravineGen = new MapGenRavineTFC(20, 50);//deep
 	private MapGenRiverRavine riverRavineGen = new MapGenRiverRavine();
 
@@ -576,7 +574,7 @@ public class TFCChunkProviderGenerate extends ChunkProviderGenerate
 			{
 				int arrayIndex = xCoord + zCoord * 16;
 				int arrayIndexDL = zCoord + xCoord * 16;
-				int arrayIndex2 = delvrTfcFixes? xCoord + zCoord * 16: xCoord+1 + zCoord+1 * 16; //delvr
+				int arrayIndex2 = xCoord+1 + zCoord+1 * 16;
 				TFCBiome biome = (TFCBiome)getBiome(xCoord,zCoord);
 				DataLayer rock1 = rockLayer1[arrayIndexDL] == null ? DataLayer.GRANITE : rockLayer1[arrayIndexDL];
 				DataLayer rock2 = rockLayer2[arrayIndexDL] == null ? DataLayer.GRANITE : rockLayer2[arrayIndexDL];
@@ -603,7 +601,7 @@ public class TFCChunkProviderGenerate extends ChunkProviderGenerate
 					int indexBig = (arrayIndex) * worldHeight + height + indexOffset;
 					int index = (arrayIndex) * 128 + height;
 					//metaBig[indexBig] = 0;
-					float temp = TFC_Climate.adjustHeightToTemp(delvrTfcFixes ? height + indexOffset: height, bioTemp); // delvr
+					float temp = TFC_Climate.adjustHeightToTemp(height, bioTemp);
 					if(TFC_Core.isBeachBiome(biome.biomeID) && height > seaLevel+h && idsTop[index] == Blocks.stone)
 					{
 						idsTop[index] = Blocks.air;

@@ -3,11 +3,12 @@ package streams
 import cpw.mods.fml.common.Mod
 import cpw.mods.fml.common.Mod.EventHandler
 import cpw.mods.fml.common.event._
+import cpw.mods.fml.relauncher.Side._
 import farseek.FarseekBaseMod
 import farseek.block._
 import farseek.world._
 import net.minecraft.block.Block._
-import net.minecraft.block.material.{MaterialLiquid, Material}
+import net.minecraft.block.material._
 import streams.block._
 import streams.world.gen.structure.RiverGenerator
 
@@ -26,12 +27,14 @@ object StreamsMod extends FarseekBaseMod {
 
     @EventHandler override def handle(event: FMLLoadCompleteEvent) {
         super.handle(event)
-        val customWaterIds = allBlocks.filter(_.getMaterial == Material.water).map(getIdFromBlock).toSeq.sorted.map("mc_Entity.x == " + _).mkString( " || ")
-        info("Welcome to Farseek/Streams. Please visit http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2346379-streams-real-flowing-rivers for information and updates.")
-        info("Shader configuration: if you wish to use shaders with custom water blocks including Streams river blocks, edit your shader's gbuffers_wqater.wsh file to replace the line:\n" +
+        if(event.getSide == CLIENT) {
+            val customWaterIds = allBlocks.filter(_.getMaterial == Material.water).map(getIdFromBlock).toSeq.sorted.map("mc_Entity.x == " + _).mkString( " || ")
+            info("Welcome to Farseek/Streams. Please visit http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2346379-streams-real-flowing-rivers for information and updates.")
+            info("Shader configuration: if you wish to use shaders with custom water blocks including Streams river blocks, edit your shader's gbuffers_wqater.wsh file to replace the line:\n" +
                 s"if (mc_Entity.x == 8 || mc_Entity.x == 9) {\n" +
                 "with the following line:\n" +
                 s"if ($customWaterIds) {\n" +
                 "Note that these ids will change with every new combination of loaded mods.")
+        }
     }
 }

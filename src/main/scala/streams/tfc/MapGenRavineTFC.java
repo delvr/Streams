@@ -104,8 +104,8 @@ public class MapGenRavineTFC extends MapGenBaseTFC
 					if (xMax > 16)
 						xMax = 16;
 
-					if (minY < (TFCChunkProviderGenerate.delvrTfcFixes && height >= 143? 143: 1))
-						minY = (TFCChunkProviderGenerate.delvrTfcFixes && height >= 143? 143: 1); //delvr
+					if (minY < 1)
+						minY = 1;
 
 					if (maxY > 250)
 						maxY = 250;
