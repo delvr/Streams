@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
         classpath "co.riiid:gradle-github-plugin:0.4.2"
-        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.8"
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.9"
     }
 }
 

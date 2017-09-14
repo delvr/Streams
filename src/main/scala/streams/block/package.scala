@@ -8,7 +8,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world._
 import net.minecraftforge.fml.relauncher.Side._
 import net.minecraftforge.fml.relauncher.SideOnly
-import scala.math.{atan2 => _}
 
 package object block {
 

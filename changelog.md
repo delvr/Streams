@@ -1,6 +1,5 @@
-- Requires Farseek 2.0+.
-- Now [compatible with SpongeForge](https://github.com/delvr/Farseek/issues/16).
-- Fixed cobblestone and [snow](https://github.com/Team-RTG/Realistic-Terrain-Generation/issues/1030) river sections with certain worldgen mods such as RTG. (Note: as a side-effect of this change, some worldgen caves that would have opened onto river banks in previous versions no longer do.)
-- Possibly fixed a [memory leak in StructureGenerationChunkProvider](https://github.com/delvr/Farseek/issues/8) (to be confirmed).
-- Fixed an [infinite loop with certain mod combinations](https://github.com/delvr/Streams/issues/26) such as HarvestCraft and MobHunter in an RTG world.
-- Removed unused RiverIce blocks (will return in v1.0). You may get a warning from older worlds about those blocks missing.
+- Fixed crash due to unreported Farseek dependency errors (requires Farseek 2.1 or later).
+- Fixed the ["air gaps" within Streams that allowed breathing underwater](https://github.com/delvr/Streams/issues/15).
+- Possibly fixed stone and ice "bridges" over rivers.
+- Added block.properties file for enabling Streams river blocks in shaders without manually editing shader files.
+- Removed Shader block replacement message when in server mode.

@@ -141,8 +141,10 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
 
     def getFilledPercentage(w: World, pos: BlockPos) = {
         implicit val world = w
-        val data = dataAt(pos)
-        val decay = if(data != 0 && allNeighbors(pos).exists(blockAbove(_).material == liquid)) 0f else data.toFloat
-        (8f - decay) / 9f
+        if(blockAbove(pos).isLiquid) 1f else {
+            val data = dataAt(pos)
+            val decay = if(data != 0 && allNeighbors(pos).exists(blockAbove(_).material == liquid)) 0f else data.toFloat
+            (8f - decay) / 9f
+        }
     }
 }
