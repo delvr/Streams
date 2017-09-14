@@ -14,8 +14,8 @@ import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks._
 import net.minecraft.world._
 import net.minecraft.world.gen.structure.StructureBoundingBox
-import net.minecraftforge.common.BiomeDictionary
 import net.minecraftforge.common.BiomeDictionary.Type._
+import net.minecraftforge.common.BiomeDictionary._
 import scala.Array._
 import scala.collection.mutable
 import scala.math._
@@ -37,7 +37,6 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     protected val flowPlan: FlowPlan = fill(XPlanSize, ZPlanSize)(None)
 
     // WORLD coordinates, as opposed to the translated/mirrored/rotated local coordinates used elsewhere
-    val flows  = mutable.Set[XZ]()
     val shores = mutable.Set[XZ]()
 
     private val valleys = mutable.Set[XZ]()
@@ -192,8 +191,8 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         for(z <- ZLine.reverse) {
             maxSurfaceLevels(z) = maxSurfaceLevelAt(z, flatLines)
             for(x <- XLine) {
-                if(flowPlan(x)(z).isDefined) flows += cs.xzWorld(x, z)
-                else if(allNeighbors(x, z).exists{case(nx, nz) => flowDefined(nx, nz)}) shores += cs.xzWorld(x, z)
+                if(flowPlan(x)(z).isEmpty && allNeighbors(x, z).exists{case(nx, nz) => flowDefined(nx, nz)})
+                  shores += cs.xzWorld(x, z)
             }
         }
         river += this
@@ -259,17 +258,19 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 carveValley(x, ySurface, z, valleyDfs, valleyFlow, yGround)
             }
         }
-        if(flow)
-          fillRiver(x, surfaceLevelAt(x, z, dfs), z, dfs)
+        lazy val xyzSurface = (x, surfaceLevelAt(x, z, dfs), z)
+        lazy val surfaceBlock = blockAt(xyzSurface)
+        if(flow || (this.isInstanceOf[RiverMouthComponent] && isWithin(flowPlan, x, z) && (surfaceBlock.isLiquid || surfaceBlock.material == Material.ICE)))
+            fillRiver(xyzSurface, dfs)
     }
 
     private def carveValley(x: Int, ySurface: Int, z: Int, dfs: Int, flow: Boolean, yGround: Int)(implicit blockSetter: BlockSetter) {
-        val yFloor = if(flow) ySurface else adjustedFloorLevel(x, valleyFloor(x, ySurface, z, dfs, flow, yGround), z)
+        val yFloor = if(flow) ySurface else adjustedFloorLevel(x, valleyFloor(ySurface, dfs, flow, yGround), z)
         for(y <- yGround until yFloor by -1)
             clearBlockAt(x, y, z)
     }
 
-    private def valleyFloor(x: Int, ySurface: Int, z: Int, dfs: Int, flow: Boolean, yGround: Int)(implicit bac: IBlockAccess) = {
+    private def valleyFloor(ySurface: Int, dfs: Int, flow: Boolean, yGround: Int)(implicit bac: IBlockAccess) = {
         val groundHeight = yGround - ySurface
         if(groundHeight <= 0)
             ySurface
@@ -290,24 +291,28 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 val flow = flowDefined(x, z)
                 val dfs = shoreDistances(x, z)
                 if(flow || dfs <= MidPadding) {
-                    val ySurface = surfaceLevelAt(x, z, dfs)
+                    val xyzSurface = (x, surfaceLevelAt(x, z, dfs), z)
                     if(isSource && !flow && dfs == 0) {
-                        val rockBlock = rockBlockFor(x, ySurface, z)
+                        val rockBlock = rockBlockFor(xyzSurface.x, xyzSurface.y, xyzSurface.z)
                         foreachDownFrom((x, clamped(roofLevels, z) - 1, z), blockAt(_).material != Material.ROCK, xyz =>
                             if(blockAt(xyz).isGround) setBlockAndDataAt(xyz, rockBlock))
                     } else if(!valleys.contains(x, z))
-                        carveTunnel(x, ySurface, z, dfs, flow)
+                        carveTunnel(xyzSurface, dfs, flow)
                     if(flow) {
-                        val surfaceBlock = blockAt(x, ySurface, z)
-                        if(surfaceBlock.isInstanceOf[BlockRiver])
-                            setBlockAt((x, ySurface, z), riverBlock(flowPlan(x)(z).get), flowDecayAt(z), notifyNeighbors = false)
-                        else if(surfaceBlock == getFlowingBlock(liquid))
-                            setBlockAt((x, ySurface, z), getFlowingBlock(liquid), 7, notifyNeighbors = false)
+                        val yDownstreamSurface = surfaceLevel(downstreamLevel(z, _.surfaceLevelsUnits).getOrElse(river.seaLevelUnits))
+                        val blockRiver = riverBlock(flowPlan(x)(z).get)
+                        if(blockAt(xyzSurface) == getFlowingBlock(liquid)) {
+                            setBlockAt(xyzSurface, getFlowingBlock(liquid), 7, notifyNeighbors = false) // Try to fix waterfalls
+                            if(!isSource) deleteBlockAt(xyzSurface.above, notifyNeighbors = false) // Try to fix the occasional stone "bridge"
+                        }
+                        setRiverBlockAt((x, yDownstreamSurface, z), blockRiver, flowDecayAt(z))
+                        val yBottom = yDownFrom(yDownstreamSurface - 1).find(blockAt(x, _, z).isSolid).get
+                        for(y <- yDownstreamSurface - 1 until yBottom by -1)
+                            setRiverBlockAt((x, y, z), blockRiver)
                         if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
-                            val yBottom = yDownFrom(ySurface - 1).find(blockAt(x, _, z).isSolid).get
                             val bottomBlock =
-                              if(BiomeDictionary.hasType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
-                              else sandBlockFor(x, yBottom, z)
+                                if(hasType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
+                                else sandBlockFor(x, yBottom, z)
                             foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
                         }
                     }
@@ -316,18 +321,21 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         }
     }
 
-    private def carveTunnel(x: Int, ySurface: Int, z: Int, dfs: Int, flow: Boolean)(implicit blockSetter: BlockSetter) {
+    private def carveTunnel(xyzSurface: XYZ, dfs: Int, flow: Boolean)(implicit blockSetter: BlockSetter) {
         if(flow || dfs < MidPadding) {
+            val (x, ySurface, z) = xyzSurface
             val yFloor = if(flow) ySurface else adjustedFloorLevel(x, ySurface + dfs, z)
             val yRoof = if(!isSource) clamped(roofLevels, z) else ySurface + max(0, MinTunnelHeight - z * 3 / 4 - 1)
             val yBaseCeiling = yRoof - (yFloor - ySurface) - (if(flow) max(0, BaseTunnelCeilingThickness - dfs) else BaseTunnelCeilingThickness)
             val stalactite = FloorAndCeilingFudge.nextBoolean && blockAt(x, yBaseCeiling, z).isSolid
             val yCeiling = if(stalactite) yBaseCeiling - 1 else yBaseCeiling
             if(yCeiling > yFloor + 1 || (isSource && yCeiling > yFloor)) {
-                val ceiling = blockAt(x, yCeiling, z)
+                val xyzCeiling = (x, yCeiling, z)
+                val ceiling = blockAt(xyzCeiling)
                 if(ceiling.isGranular) {
-                  setRockBlockAt(x, yCeiling, z) // Harden ceiling
-                  if(stalactite) setRockBlockAt(x, yCeiling + 1, z)
+                    val rock = rockBlockFor(x, yCeiling, z)
+                    setBlockAndDataAt(xyzCeiling, rock, notifyNeighbors = false) // Harden ceiling
+                    if(stalactite) setBlockAndDataAt(xyzCeiling.above, rock, notifyNeighbors = false)
                 }
                 for(y <- yCeiling - 1 until yFloor by -1)
                     clearBlockAt(x, y, z)
@@ -335,13 +343,18 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         }
     }
 
-    private def fillRiver(x: Int, ySurface: Int, z: Int, dfs: Int)(implicit blockSetter: BlockSetter) {
+    private def fillRiver(xyzSurface: XYZ, dfs: Int)(implicit blockSetter: BlockSetter) {
+        val (x, ySurface, z) = xyzSurface
         val yDownstreamSurface = surfaceLevel(downstreamLevel(z, _.surfaceLevelsUnits).getOrElse(river.seaLevelUnits))
         val yBottom = yDownstreamSurface - clamped(1, dfs, MaxDepth)
-        val liquidBlock = riverBlock(flowPlan(x)(z).get)
-        for(y <- yBottom + 1 until yDownstreamSurface)
-            setRiverBlockAt(x, y, z, liquidBlock) // Upwards, to simplify shoring-up
-        setRiverBlockAt(x, yDownstreamSurface, z, liquidBlock, flowDecayAt(z))
+        var liquidBlock: Block = getStaticBlock(liquid)
+        for(y <- yDownstreamSurface until yBottom by -1) {
+            val block = blockAt(x, y, z)
+            if(block.material != Material.ICE) {
+                if(block.isLiquid) liquidBlock = block
+                else setBlockAt((x, y, z), liquidBlock, notifyNeighbors = false) // Vanilla water to block cave/ravine gen
+            }
+        }
         for(y <- yDownstreamSurface + 1 to ySurface)
             setBlockAt((x, y, z), getFlowingBlock(liquid), 8, notifyNeighbors = false) // Waterfall
     }
@@ -349,22 +362,16 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
     private def clearBlockAt(xyz: XYZ)(implicit blockSetter: BlockSetter) {
         val block = blockAt(xyz)
         if(block != BEDROCK && !block.isInstanceOf[BlockRiver])
-            deleteBlockAt(xyz) // In build step, will notify neighbors and shore up and crossing river
+            deleteBlockAt(xyz, notifyNeighbors = false)
     }
 
-    private def setRockBlockAt(xyz: XYZ)(implicit blockSetter: BlockSetter) {
-        if(blockAt(xyz) != BEDROCK)
-            setBlockAndDataAt(xyz, rockBlockFor(xyz.x, xyz.y, xyz.z), notifyNeighbors = false)
-    }
-
-    private def setRiverBlockAt(x: Int, y: Int, z: Int, newBlock: BlockRiver, flowDecay: Int = 0)(implicit blockSetter: BlockSetter) {
-        blockAt(x, y, z) match {
-            case block: FixedFlowBlock if block.material == liquid || block.material == Material.ICE =>
-                val (dx, dz, decay) = interpolate((block.dxFlow, block.dzFlow, dataAt(x, y, z)), (newBlock.dxFlow, newBlock.dzFlow, flowDecay))
-                setBlockAndDataAt((x, y, z), (FixedFlowBlock(liquid, dx, dz), decay), notifyNeighbors = false)
-            case block: Block if !(block == BEDROCK || block.material == Material.ICE || (block.material == liquid && dataAt(x, y, z) == 0)) =>
-                setBlockAndDataAt((x, y, z), (newBlock, flowDecay), notifyNeighbors = false)
+    private def setRiverBlockAt(xyz: XYZ, newBlock: BlockRiver, flowDecay: Int = 0)(implicit blockSetter: BlockSetter) {
+        blockAt(xyz) match {
+            case block: FixedFlowBlock =>
+                val (dx, dz, decay) = interpolate((block.dxFlow, block.dzFlow, dataAt(xyz)), (newBlock.dxFlow, newBlock.dzFlow, flowDecay))
+                setBlockAndDataAt(xyz, (FixedFlowBlock(liquid, dx, dz), decay), notifyNeighbors = false)
             case _ =>
+                setBlockAndDataAt(xyz, (newBlock, flowDecay), notifyNeighbors = false)
         }
     }
 
@@ -380,7 +387,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
         case East  => ( dz,  dx)
     }
 
-    def isFlowOrShoreAt(wxz: XZ) = flows.contains(wxz) || shores.contains(wxz)
+    def isFlowOrShoreAt(wxz: XZ) = flowDefined(cs.xLocal(wxz.x, wxz.z), cs.zLocal(wxz.x, wxz.z)) || shores.contains(wxz)
 
     private def adjustedFloorLevel(x: Int, yFloor: Int, z: Int) = intersectingFlowOrShoreSurfaceLevelAt(cs.xzWorld(x, z)) match {
         case Some(minLevel) => max(minLevel, yFloor)
@@ -404,7 +411,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
           val preRoundBase = shores.map(s => distance(wx, wz, s.x, s.z)).min
           (if(FloorAndCeilingFudge.nextBoolean()) floor(preRoundBase) else ceil(preRoundBase)).toInt
         }
-        if(flows.contains(wx, wz) || xz.z >= ZPlanMax/2) base else base + 1
+        if(flowDefined(xz.x, xz.z) || xz.z >= ZPlanMax/2) base else base + 1
     }
 
     private def surfaceLevelAt(x: Int, z: Int, dfs: Int) = {
@@ -447,8 +454,6 @@ object RiverComponent {
     val MinTunnelHeight = 8
     val BaseTunnelCeilingThickness = 2
     val FloorAndCeilingFudge = new Random
-    
-    val SurfacePlaceholder = COBBLESTONE // Opaque and non-fertile
 
     val MinElevationForRatcheting = 6
 

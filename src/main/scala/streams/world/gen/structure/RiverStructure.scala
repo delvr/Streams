@@ -27,7 +27,7 @@ class RiverStructure(generator: RiverGenerator, boundingBox: StructureBoundingBo
     }
     val seaLevelUnits = surfaceLevelUnits(seaLevel)
 
-    def generate(implicit worldAccess: IBlockAccess, random: Random) {
+    def generate()(implicit worldAccess: IBlockAccess, random: Random) {
         random.shuffle(CardinalDirections).foreach {
             case North => for(x <- slide(xMin, xMax, XPlanSize)) if(createMouth(South, XPlanSize, ZPlanSize, x, zMin + ShorePadding)) return
             case South => for(x <- slide(xMin, xMax, XPlanSize)) if(createMouth(North, XPlanSize, ZPlanSize, x, zMax - ZPlanSize - ShorePadding + 1)) return

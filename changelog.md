@@ -1,2 +1,4 @@
-- Updated to Minecraft 1.11.
 - Fixed crash due to unreported Farseek dependency errors (requires Farseek 2.1 or later).
+- Possibly fixed stone and ice "bridges" over rivers.
+- Added block.properties file for enabling Streams river blocks in shaders without manually editing shader files.
+- Removed Shader block replacement message when in server mode.

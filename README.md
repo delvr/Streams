@@ -22,7 +22,7 @@ The build process of Farseek will output `-deobf` and `-sources` jars; place bot
 ## IDE Setup
 The IDEA `Update` run configuration will run `setupDecompWorkspace` and `genIntellijRuns`.
 After running `Update`, synchronize Gradle in IntelliJ IDEA to set up module configs.
-If using IntelliJ 2016, make sure the Gradle plugin setting "Create separate module per source set" is NOT checked.
+If using IntelliJ 2016 or later, make sure the Gradle plugin setting "Create separate module per source set" is NOT checked.
 
 ## Testing
 Run the generated `Minecraft Client` or `Minecraft Server` configuration.
