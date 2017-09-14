@@ -1,2 +1,1 @@
-- Updated to Minecraft 1.11.
-- Fixed crash due to unreported Farseek dependency errors (requires Farseek 2.1 or later).
+- Updated to Minecraft 1.12.

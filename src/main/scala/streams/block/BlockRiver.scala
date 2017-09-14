@@ -14,12 +14,13 @@ import net.minecraft.block.material._
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.item._
 import net.minecraft.init.SoundEvents
-import net.minecraft.util.SoundCategory
+import net.minecraft.util._
 import net.minecraft.util.math._
 import net.minecraft.world._
 import net.minecraftforge.fml.common.registry._
 import net.minecraftforge.fml.relauncher.Side._
 import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.registries.IRegistryDelegate
 import scala.math._
 
 /** @author delvr */
@@ -29,10 +30,10 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
 
     private val baseFlowVector = new Vec3d(dxFlow, 0, dzFlow)
 
-    cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, _.getType == classOf[RegistryDelegate[Block]])
+    cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, f => f.getType == classOf[IRegistryDelegate[Block]] || f.getType == classOf[ResourceLocation])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
-    GameRegistry.register(setRegistryName("streams", s"river/$getUnlocalizedName/$dxFlow/$dzFlow"))
+    ForgeRegistries.BLOCKS.register(setRegistryName("streams", s"river/$getUnlocalizedName/$dxFlow/$dzFlow"))
 
     override def onBlockAdded(w: World, pos: BlockPos, state: IBlockState) {
         if(populating)

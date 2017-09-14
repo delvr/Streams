@@ -1,11 +1,11 @@
 package streams.world.gen.structure
 
-import java.util.Random
-
 import farseek.block._
 import farseek.util._
 import farseek.world._
 import farseek.world.gen._
+import java.util.Random
+import net.minecraft.block.material.Material
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.gen.structure.StructureBoundingBox
 
@@ -33,6 +33,14 @@ class RiverMouthComponent(river: RiverStructure, boundingBox: StructureBoundingB
                     return false
         }
         true
+    }
+
+    override protected def commit(implicit bac: IBlockAccess, random: Random) {
+        super.commit(bac, random)
+        for(x <- XLine; z <- ZLine) {
+            val material = blockStateAt(x, river.seaLevel, z).block.material
+            if(material.isLiquid || material == Material.ICE) flowPlan(x)(z) = None
+        }
     }
 
     def addUpstream(implicit bac: IBlockAccess, random: Random) {
