@@ -1,1 +1,1 @@
-- Updated to Minecraft 1.12.
+- Streams river blocks can now power water wheels from [Immersive Engineering](https://minecraft.curseforge.com/projects/immersive-engineering) and [Better With Mods](https://minecraft.curseforge.com/projects/better-with-mods).
