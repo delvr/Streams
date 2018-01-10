@@ -1,7 +1,6 @@
 package streams
 
 import farseek.util.ImplicitConversions._
-import farseek.util.Reflection._
 import farseek.world._
 import java.lang.Math._
 import net.minecraft.block._
@@ -13,9 +12,6 @@ import net.minecraftforge.fml.relauncher.Side._
 import net.minecraftforge.fml.relauncher.SideOnly
 
 package object block {
-
-    private lazy val immersiveEngineeringUtilsGetFlowVector =
-        Class.forName("blusunrize.immersiveengineering.common.util.Utils").getMethod("getFlowVector", classOf[World], classOf[BlockPos])
 
     @SideOnly(CLIENT)
     def getSlopeAngle(w: IBlockAccess, pos: BlockPos, material: Material, state: IBlockState): Float = {
@@ -33,7 +29,7 @@ package object block {
         val state = blockStateAt(pos)
         state.getBlock match {
             case block: BlockRiver => block.getFlow(world, pos, state)
-            case _ => immersiveEngineeringUtilsGetFlowVector(null, world, pos)
+            case _ => blusunrize.immersiveengineering.common.util.Utils.getFlowVector(w, pos)
         }
     }
 

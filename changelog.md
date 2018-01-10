@@ -1,1 +1,1 @@
-- Streams river blocks can now power water wheels from [Immersive Engineering](https://minecraft.curseforge.com/projects/immersive-engineering) and [Better With Mods](https://minecraft.curseforge.com/projects/better-with-mods).
+- Fixed [a possible crash when river components fail to find a surface or bottom level](https://github.com/delvr/Streams/issues/47).

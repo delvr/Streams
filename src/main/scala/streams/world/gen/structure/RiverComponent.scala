@@ -300,20 +300,23 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                         carveTunnel(xyzSurface, dfs, flow)
                     if(flow) {
                         val yDownstreamSurface = surfaceLevel(downstreamLevel(z, _.surfaceLevelsUnits).getOrElse(river.seaLevelUnits))
-                        val blockRiver = riverBlock(flowPlan(x)(z).get)
-                        if(blockAt(xyzSurface) == getFlowingBlock(liquid)) {
-                            setBlockAt(xyzSurface, getFlowingBlock(liquid), 7, notifyNeighbors = false) // Try to fix waterfalls
-                            if(!isSource) deleteBlockAt(xyzSurface.above, notifyNeighbors = false) // Try to fix the occasional stone "bridge"
-                        }
-                        setRiverBlockAt((x, yDownstreamSurface, z), blockRiver, flowDecayAt(z))
-                        val yBottom = yDownFrom(yDownstreamSurface - 1).find(blockAt(x, _, z).isSolid).get
-                        for(y <- yDownstreamSurface - 1 until yBottom by -1)
-                            setRiverBlockAt((x, y, z), blockRiver)
-                        if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
-                            val bottomBlock =
-                                if(hasType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
-                                else sandBlockFor(x, yBottom, z)
-                            foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
+                        yDownFrom(yDownstreamSurface - 1).find(blockAt(x, _, z).isSolid) match {
+                            case Some(yBottom) =>
+                                val blockRiver = riverBlock(flowPlan(x)(z).get)
+                                if(blockAt(xyzSurface) == getFlowingBlock(liquid)) {
+                                    setBlockAt(xyzSurface, getFlowingBlock(liquid), 7, notifyNeighbors = false) // Try to fix waterfalls
+                                    if(!isSource) deleteBlockAt(xyzSurface.above, notifyNeighbors = false) // Try to fix the occasional stone "bridge"
+                                }
+                                setRiverBlockAt((x, yDownstreamSurface, z), blockRiver, flowDecayAt(z))
+                                for(y <- yDownstreamSurface - 1 until yBottom by -1)
+                                    setRiverBlockAt((x, y, z), blockRiver)
+                                if(blockSetter.worldProvider.isSurfaceWorld) { // Set riverbed
+                                    val bottomBlock =
+                                        if(hasType(baseBiomeAt(x, yBottom, z), COLD)) gravelBlockFor(x, yBottom, z)
+                                        else sandBlockFor(x, yBottom, z)
+                                    foreachDownFrom((x, yBottom, z), blockAt(_).isSoil, setBlockAndDataAt(_, bottomBlock, notifyNeighbors = false))
+                                }
+                            case None => // happened in https://github.com/delvr/Streams/issues/47, cause unknown
                         }
                     }
                 }

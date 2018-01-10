@@ -12,3 +12,7 @@ buildscript {
 }
 
 apply from: zipTree(fileTree("libs"){include "Farseek-*-deobf.jar"}.singleFile).matching{include "common.gradle"}.singleFile
+
+dependencies {
+    compileOnly "2516/240:BetterWithMods:1.12-2.0.24", "2515/333:ImmersiveEngineering:0.12-76"
+}
