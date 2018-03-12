@@ -1,1 +1,1 @@
-- Fixed [a possible crash when river components fail to find a surface or bottom level](https://github.com/delvr/Streams/issues/47).
+- River blocks are now [handled by shaders without needing to copy the block.properties file](https://github.com/delvr/Streams/issues/55). (Thanks InsomniaKitten!)

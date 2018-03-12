@@ -6,7 +6,6 @@ import net.minecraft.block.material._
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.Mod.EventHandler
 import net.minecraftforge.fml.common.event._
-import net.minecraftforge.fml.relauncher.Side._
 import streams.block._
 import streams.world.gen.structure.RiverGenerator
 
@@ -21,14 +20,5 @@ object StreamsMod extends FarseekBaseMod {
     @EventHandler def handle(event: FMLPreInitializationEvent) {
         FixedFlowBlock.getClass // Register river blocks
         RiverGenerator.surfaceWaterGenerator = new RiverGenerator(Material.WATER.asInstanceOf[MaterialLiquid], SurfaceDimensionId)
-    }
-
-    @EventHandler override def handle(event: FMLLoadCompleteEvent) {
-        super.handle(event)
-        if(event.getSide == CLIENT) {
-            info("Welcome to Farseek/Streams. Please visit http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2346379-streams-real-flowing-rivers for information and updates.")
-            info("Shader configuration: if you wish to use shaders with Streams river blocks, put the block.properties file from this mod's jar into your shaderpack's 'shaders' directory.")
-            info("Note: if shaders stop working for Streams blocks after a restart, disable and re-enable your shaderpack to fix this.")
-        }
     }
 }
