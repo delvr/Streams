@@ -1,4 +1,2 @@
-- TFC soil blocks falling in streams when _not_ using Repose are now washed away as items instead of simply disappearing, and no longer make a rock breaking sound.
-- Gravity-fallen rock blocks can now replace Streams river blocks. This addresses a corner case where Streams, Repose and TFC would cause infinite re-spawn of lava-generated cobble.
-- Fixed TFC Nether using wrong modded chunk provider.
-- Removed Shader block replacement message when in server mode.
+- Fixed [falling blocks bouncing endlessly when landing on blocks without a solid top](https://github.com/delvr/Streams/issues/63).
+- Fixed the ["air gaps" within Streams that allowed breathing underwater](https://github.com/delvr/Streams/issues/15).

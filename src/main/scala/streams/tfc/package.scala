@@ -40,15 +40,11 @@ package object tfc {
     def isFreshWater(block: Block): Boolean = block.isInstanceOf[BlockRiver] || TFC_Core.isFreshWater(block)
 
     def canReplace(fallingBlock: EntityFallingBlockTFC, world: World, x: Int, y: Int, z: Int): Boolean = {
-        if(!fallingBlock.isDead)
-            false
+        if(!blockAt(x, y, z)(world).isInstanceOf[BlockRiver])
+            fallingBlock.canReplace(world, x, y, z)
         else {
-            if(!blockAt(x, y, z)(world).isInstanceOf[BlockRiver])
-                fallingBlock.canReplace(world, x, y, z)
-            else {
-                fallingBlock.shouldDropItem = true
-                false
-            }
+            fallingBlock.shouldDropItem = true
+            false
         }
     }
 }
