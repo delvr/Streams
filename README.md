@@ -7,7 +7,7 @@ joining together into wider rivers until they reach a body of water at sea level
 
 Please note that the source code is in [Scala](http://scala-lang.org) (not Java), and that most of it will be replaced as part of an upcoming major rewrite.
 Keeping that in mind, if you have any questions about the code please send me (delvr) a message here on GitHub.
-For help with the build process please read [Getting started with ForgeGradle](http://www.minecraftforge.net/forum/index.php/topic,14048.0.html) first.
+For help with the build process please read [Getting started with ForgeGradle](http://www.minecraftforge.net/forum/topic/13860-tutorial-getting-started-with-forgegradle/) first.
 
 Questions about the mod itself are best posted to the [discussion thread](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2346379-streams-real-flowing-rivers).
 

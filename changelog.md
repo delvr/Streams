@@ -1,1 +1,1 @@
-- River blocks are now [handled by shaders without needing to copy the block.properties file](https://github.com/delvr/Streams/issues/55). (Thanks InsomniaKitten!)
+- Fixed [streams not generating in worlds with custom sea levels](https://github.com/delvr/Streams/issues/58).

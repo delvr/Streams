@@ -3,6 +3,5 @@
 !/.gitignore
 !/gradle.xml
 !/misc.xml
-!/scala_compiler.xml
 !/scala_settings.xml
 !/vcs.xml
