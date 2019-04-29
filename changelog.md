@@ -1,1 +1,3 @@
-- Fixed [streams not generating in worlds with custom sea levels](https://github.com/delvr/Streams/issues/58).
+- Fixed river blocks not being rendered by shaders in recent versions of Forge/OptiFine.
+- Fixed river blocks not being rendered by [BSL shaders](https://bitslablab.wixsite.com/main/bsl-shaders) (this works with 7.0 and 7.1.01, but not with earlier versions of 7.1).
+- Fixed river blocks ignoring biome-specific water colors when _not_ using OptiFine.

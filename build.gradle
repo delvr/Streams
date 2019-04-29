@@ -7,12 +7,12 @@ buildscript {
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
         classpath "co.riiid:gradle-github-plugin:0.4.2"
-        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.10"
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.2"
     }
 }
 
 apply from: zipTree(fileTree("libs"){include "Farseek-*-deobf.jar"}.singleFile).matching{include "common.gradle"}.singleFile
 
 dependencies {
-    compileOnly "2566/229:BetterWithMods:1.12-2.1.22", "2559/547:ImmersiveEngineering:0.12-82"
+    compileOnly "2566/229:BetterWithMods:1.12-2.1.22", "immersive-engineering:ImmersiveEngineering:0.12:89"
 }
