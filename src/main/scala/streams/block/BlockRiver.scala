@@ -33,7 +33,7 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
     cloneObject(classOf[BlockLiquid], getStaticBlock(liquid), this, f => f.getType == classOf[IRegistryDelegate[Block]] || f.getType == classOf[ResourceLocation])
     blockState = createBlockState
     setDefaultState(blockState.getBaseState)
-    ForgeRegistries.BLOCKS.register(setRegistryName("streams", s"river/${Block.REGISTRY.getNameForObject(getStaticBlock(liquid)).getPath}/$dxFlow/$dzFlow"))
+    ForgeRegistries.BLOCKS.register(setRegistryName("streams", s"river/${getStaticBlock(liquid).getTranslationKey}/$dxFlow/$dzFlow"))
 
     override def onBlockAdded(w: World, pos: BlockPos, state: IBlockState) {
         if(populating)
