@@ -2,6 +2,7 @@ package streams
 
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BlockModelShapes
 import net.minecraft.client.renderer.color._
 import net.minecraft.util.math.BlockPos
@@ -17,13 +18,12 @@ package object client {
     shapes.registerBuiltInBlocks(FixedFlowBlocks.values.map(_.asInstanceOf[Block]).toSeq:_*)
   }
 
-  def init(): BlockColors = {
-    val colors = BlockColors.init
+  def setupRiverBlockColors(): Unit = {
+    val colors = Minecraft.getMinecraft.getBlockColors
     val handler = new IBlockColor {
       override def colorMultiplier(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos, tintIndex: Int): Int =
         if(worldIn != null && pos != null) BiomeColorHelper.getWaterColorAtPos(worldIn, pos) else -1
     }
     FixedFlowBlocks.values.foreach(colors.registerBlockColorHandler(handler, _))
-    colors
   }
 }
