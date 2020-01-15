@@ -460,7 +460,7 @@ object RiverComponent {
 
     val MinElevationForRatcheting = 6
 
-    val MinSourceBackWallHeight = 2
+    val MinSourceBackWallHeight = 0 // workaround for https://github.com/delvr/Streams/issues/74
 
     def surfaceLevelUnits(level: Int) = level*7 + 6
     def surfaceLevel(units: Int) = units / 7
