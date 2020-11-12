@@ -57,7 +57,7 @@ class RiverUpstreamComponent(downstream: RiverComponent, boundingBox: StructureB
                 widthStretch = max(widthStretch, curvedBranch.widthStretch)
             overlay(stretchedPlan, flowPlan)
         }
-        if(widthStretch < 0 && maxSurfaceLevels(ZModelPlanMax) >= yMinSurfaceLevel + MinSourceBackWallHeight && isValid(uncommitted)) { // isValid attempts (and sometimes fails ) to prevents mid-air sources
+        if(widthStretch < 0 && maxSurfaceLevels(ZModelPlanMax) >= yMinSurfaceLevel + minSourceBackWallHeight(world.getWorldInfo) && isValid(uncommitted)) {
             overlay(randomElement(SourceModelPlans), flowPlan)
             widthStretch = 0
         }

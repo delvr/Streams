@@ -13,7 +13,7 @@
 
 !/gradle/
 
-!/src/
+!/src/**
 /src/main/resources/mcmod.info
 
 !/.gitignore

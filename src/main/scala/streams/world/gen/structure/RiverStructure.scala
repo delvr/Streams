@@ -14,7 +14,7 @@ import scala.util.Random._
 import streams.world.gen.structure.RiverComponent._
 
 /** @author delvr */
-class RiverStructure(generator: RiverGenerator, boundingBox: StructureBoundingBox, worldProvider: WorldProvider)
+class RiverStructure(generator: RiverGenerator, boundingBox: StructureBoundingBox, override val worldProvider: WorldProvider)
         extends Structure[RiverComponent](generator, boundingBox, worldProvider) {
 
     import streams.world.gen.structure.RiverStructure._

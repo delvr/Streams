@@ -62,7 +62,7 @@ class BlockRiver(liquid: MaterialLiquid, val dxFlow: Int, val dzFlow: Int) exten
 
     private def stabilize(xyz: XYZ)(implicit w: World) {
         val block = blockAt(xyz)
-        if(!block.isSolidOrLiquid || (block.isGranular && !blockBelow(xyz).isSolid))
+        if((!block.isSolidOrLiquid || (block.isGranular && !blockBelow(xyz).isSolid)) && !blockAt(xyz.below).isLiquid)
             setBlockAndDataAt(xyz, rockBlockFor(xyz.x, xyz.y, xyz.z), notifyNeighbors = false)
     }
 

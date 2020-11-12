@@ -14,6 +14,7 @@ import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks._
 import net.minecraft.world._
 import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.storage.WorldInfo
 import net.minecraftforge.common.BiomeDictionary.Type._
 import net.minecraftforge.common.BiomeDictionary._
 import scala.Array._
@@ -26,6 +27,8 @@ import streams.world.gen.structure.RiverComponent._
 /** @author delvr */
 abstract class RiverComponent(val river: RiverStructure, val boundingBox: StructureBoundingBox,
                               val upstreamOrientation: Direction, isMirrored: Boolean) extends StructureComponent(river) {
+
+    protected val world = river.worldProvider.world
 
     implicit val cs = new DirectedCoordinates(xMin, yMin, zMin, ZPlanMax, upstreamOrientation)
 
@@ -228,7 +231,7 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                 if(roofLevels(z) < yMaxTunnelRoof)
                     roofLevels(z) += 1
                 val ySurface = surfaceLevel(surfaceLevelsUnits(z))
-                val yMaxSurface = max(ySurface, roofLevels(z) - MinTunnelHeight - 1 - (if(isSource) MinSourceBackWallHeight else 0))
+                val yMaxSurface = max(ySurface, roofLevels(z) - MinTunnelHeight - 1 - (if(isSource) minSourceBackWallHeight(world.getWorldInfo) else 0))
                 if(ySurface == yMaxSurface) {
                     if(surfaceLevelsUnits(z) < surfaceLevelUnits(ySurface))
                       surfaceLevelsUnits(z) += 1
@@ -303,10 +306,10 @@ abstract class RiverComponent(val river: RiverStructure, val boundingBox: Struct
                         yDownFrom(yDownstreamSurface - 1).find(blockAt(x, _, z).isSolid) match {
                             case Some(yBottom) =>
                                 val blockRiver = riverBlock(flowPlan(x)(z).get)
-                                if(blockAt(xyzSurface) == getFlowingBlock(liquid)) {
-                                    setBlockAt(xyzSurface, getFlowingBlock(liquid), 7, notifyNeighbors = false) // Try to fix waterfalls
-                                    if(!isSource) deleteBlockAt(xyzSurface.above, notifyNeighbors = false) // Try to fix the occasional stone "bridge"
-                                }
+                                if(blockAt(xyzSurface) == getFlowingBlock(liquid))
+                                    setBlockAt(xyzSurface, getFlowingBlock(liquid), 7, notifyNeighbors = false)
+                                else
+                                    deleteBlockAt(xyzSurface, notifyNeighbors = false)
                                 setRiverBlockAt((x, yDownstreamSurface, z), blockRiver, flowDecayAt(z))
                                 for(y <- yDownstreamSurface - 1 until yBottom by -1)
                                     setRiverBlockAt((x, y, z), blockRiver)
@@ -460,7 +463,10 @@ object RiverComponent {
 
     val MinElevationForRatcheting = 6
 
-    val MinSourceBackWallHeight = 0 // workaround for https://github.com/delvr/Streams/issues/74
+    val minSourceBackWallHeights = mutable.Map[WorldInfo, Int]()
+    def minSourceBackWallHeight(info: WorldInfo) = minSourceBackWallHeights.getOrElseUpdate(info,
+      if(Option(System.getProperty("streams.legacyGeneration")).orElse(sys.env.get("STREAMS_LEGACY_GENERATION"))
+        .exists(_.toBoolean)) 2 else 0)
 
     def surfaceLevelUnits(level: Int) = level*7 + 6
     def surfaceLevel(units: Int) = units / 7
