@@ -1,3 +1,5 @@
+## Note: this repository is superceded by [Farseek-Mods](https://github.com/delvr/Farseek-Mods) for newer Minecraft versions.
+
 # Streams
 
 The Streams mod introduces real flowing rivers, with a true current, to Minecraft.
