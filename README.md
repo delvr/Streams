@@ -1,4 +1,4 @@
-## Note: this repository is superceded by [Farseek-Mods](https://github.com/delvr/Farseek-Mods) for newer Minecraft versions.
+## Note: this repository is superseded by [Farseek-Mods](https://github.com/delvr/Farseek-Mods) for newer Minecraft versions.
 
 # Streams
 
